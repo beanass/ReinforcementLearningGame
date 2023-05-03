@@ -22,6 +22,21 @@
 love.graphics.setDefaultFilter('nearest', 'nearest')
 require 'src/Dependencies'
 
+local socket = require("socket")
+local json = require("lib/JSON")
+
+local server = socket.tcp()
+server:bind("127.0.0.1", 8080)
+server:listen(1)
+server:settimeout(0)
+
+local client = nil
+
+local function sendGameState(client, gameState)
+    local jsonGameState = json.encode(gameState)
+    client:send(jsonGameState .. "\n")
+end
+
 function love.load()
     love.graphics.setFont(gFonts['medium'])
     love.window.setTitle('Super 50 Bros.')
@@ -65,7 +80,18 @@ function love.keyboard.wasPressed(key)
 end
 
 function love.update(dt)
+    if not client then
+        client = server:accept()
+    end
+
     gStateMachine:update(dt)
+
+    local stateJson = json:encode(gStateMachine.name)
+
+    if client then
+        client:settimeout(0)
+        client:send(stateJson .. "\n")
+    end
 
     love.keyboard.keysPressed = {}
 end
@@ -74,4 +100,8 @@ function love.draw()
     push:start()
     gStateMachine:render()
     push:finish()
+end
+
+function love.quit()
+    server:close()
 end
