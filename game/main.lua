@@ -86,11 +86,18 @@ function love.update(dt)
 
     gStateMachine:update(dt)
 
-    local stateJson = json:encode(gStateMachine.name)
+    --stateJson = json:encode(gStateMachine.name)
+    if gStateMachine.current.level then 
+        gameState = getGameState(gStateMachine)
+        levelJson = json:encode(gameState)
+        print(string.len(levelJson))
+    end
 
     if client then
         client:settimeout(0)
-        client:send(stateJson .. "\n")
+        if levelJson then
+            client:send(levelJson .. "\n")
+        end
     end
 
     love.keyboard.keysPressed = {}
@@ -104,4 +111,52 @@ end
 
 function love.quit()
     server:close()
+end
+
+function getGameState(gStateMachine)
+    gameState = {}
+
+    newPlayer = shallowcopy(gStateMachine.current.player)
+    newPlayer.level = nil
+    newPlayer.map = nil
+    newPlayer.stateMachine = nil
+    gameState.player = newPlayer
+
+    entityTable = {}
+    for k, entity in pairs(gStateMachine.current.level.entities) do
+        newEntity = shallowcopy(entity)
+        newEntity.level = nil
+        newEntity.map = nil
+        newEntity.stateMachine = nil
+        table.insert(entityTable, newEntity)
+    end
+    gameState.entities = entityTable
+
+    objectTable = {}
+    for k, object in pairs(gStateMachine.current.level.objects) do
+        newObject = shallowcopy(object)
+        newObject.level = nil
+        newObject.map = nil
+        newObject.stateMachine = nil
+        newObject.onCollide = nil
+        newObject.onConsume = nil
+        table.insert(objectTable, newObject)
+    end
+    gameState.objects = objectTable
+
+    return gameState
+end
+
+function shallowcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
 end
