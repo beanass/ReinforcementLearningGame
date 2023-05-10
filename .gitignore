@@ -277,3 +277,8 @@ TSWLatexianTemp*
 
 .DS_Store
 .vscode
+
+# additional
+*.venv
+# please specify if you want to push other json
+*.json 
