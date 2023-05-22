@@ -122,7 +122,8 @@ function LevelMaker.generate(width, height)
                             object.collidable = false
                             object.consumable = false
                             return true
-                        end
+                        end,
+                        key = true
                     }
                 )
             end
