@@ -1,3 +1,4 @@
+import queue
 import socket
 import json
 
@@ -8,8 +9,8 @@ file_name = 'game_state.json'
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
-    with open(file_name, 'w', encoding='utf-8') as f:
-        while True:
+    while True:
+        with open(file_name, 'w', encoding='utf-8') as f:
             data = s.recv(8192)
             print(f"Received {data!r}")
             print(type(data))

@@ -16,7 +16,7 @@ function StartState:init()
 end
 
 function StartState:update(dt)
-    if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or love.keyboard.wasPressed('space') then
+    if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') or love.keyboard.wasPressed('up') then
         gStateMachine:change('play')
     end
 end
