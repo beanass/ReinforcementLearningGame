@@ -84,13 +84,17 @@ function love.update(dt)
         client = server:accept()
     end
 
+    if client then
+        --keys = json:decode(client:recv()) 
+        
+    end
+
     gStateMachine:update(dt)
 
     --stateJson = json:encode(gStateMachine.name)
     if gStateMachine.current.level then 
         gameState = getGameState(gStateMachine)
         levelJson = json:encode(gameState)
-        print(string.len(levelJson))
     end
 
     if client then
@@ -121,6 +125,7 @@ function getGameState(gStateMachine)
     newPlayer.map = nil
     newPlayer.stateMachine = nil
     gameState.player = newPlayer
+    playerX = newPlayer.x
 
     entityTable = {}
     for k, entity in pairs(gStateMachine.current.level.entities) do
@@ -143,6 +148,24 @@ function getGameState(gStateMachine)
         table.insert(objectTable, newObject)
     end
     gameState.objects = objectTable
+
+    tileMatrix = {}
+    for y = 0, VIRTUAL_HEIGHT, TILE_SIZE do
+        tileRow = {}
+        for x = playerX - (4 * TILE_SIZE), playerX + (16 * TILE_SIZE), TILE_SIZE do
+            tile = gStateMachine.current.level.tileMap:pointToTile(x, y)
+            if tile then
+                if tile.id == TILE_ID_EMPTY then
+                    table.insert(tileRow, 0)
+                else
+                    table.insert(tileRow, 1)
+                end
+            end
+        end
+        table.insert(tileMatrix, tileRow)
+    end
+    table.insert(tileMatrix, TILE_SIZE)
+    gameState.tileMatrix = tileMatrix
 
     return gameState
 end

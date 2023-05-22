@@ -22,6 +22,13 @@ function GameObject:init(def)
     self.onConsume = def.onConsume
     self.hit = def.hit
     self.animation = def.animation
+    if self.texture == 'keys-and-locks' then
+        if def.key then
+            self.key = true
+        else
+            self.key = false
+        end
+    end
 end
 
 function GameObject:collides(target)
