@@ -121,31 +121,40 @@ function getGameState(gStateMachine)
     gameState = {}
 
     newPlayer = shallowcopy(gStateMachine.current.player)
-    newPlayer.level = nil
-    newPlayer.map = nil
-    newPlayer.stateMachine = nil
-    gameState.player = newPlayer
+    player = {}
+    player.x = newPlayer.x
+    player.y = newPlayer.y
+    player.dx = newPlayer.dx
+    player.dy = newPlayer.dy
+    player.score = newPlayer.score
+    player.hasKey = newPlayer.hasKey
+    gameState.player = player
     playerX = newPlayer.x
 
     entityTable = {}
     for k, entity in pairs(gStateMachine.current.level.entities) do
         newEntity = shallowcopy(entity)
-        newEntity.level = nil
-        newEntity.map = nil
-        newEntity.stateMachine = nil
-        table.insert(entityTable, newEntity)
+        ent = {}
+        ent.x = newEntity.x
+        ent.y = newEntity.y
+        ent.dx = newEntity.dx
+        ent.dy = newEntity.dy
+        table.insert(entityTable, ent)
     end
     gameState.entities = entityTable
 
     objectTable = {}
     for k, object in pairs(gStateMachine.current.level.objects) do
-        newObject = shallowcopy(object)
-        newObject.level = nil
-        newObject.map = nil
-        newObject.stateMachine = nil
-        newObject.onCollide = nil
-        newObject.onConsume = nil
-        table.insert(objectTable, newObject)
+        if object.texture == 'bushes' then
+
+        else
+            newObject = shallowcopy(object)
+            obj = {}
+            obj.x = newObject.x
+            obj.y = newObject.y
+            obj.texture = newObject.texture
+            table.insert(objectTable, obj)
+        end
     end
     gameState.objects = objectTable
 

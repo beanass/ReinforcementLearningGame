@@ -41,6 +41,7 @@ class CustomEnv(Env):
         # Reset the environment to its initial state
         #with open(self.filename, 'w', encoding='utf-8') as f:
         #    f.write('')
+        self.done = False
         return 0
         #self._receive_data()
         #return self._process_observation()
@@ -81,46 +82,22 @@ class CustomEnv(Env):
 
     def _process_observation(self):
         # TODO: Process the current observation from the socket output
-        '''{"entities":[
-            {"currentAnimation":
-             {"currentFrame":2,"frames":[49,50],"interval":0.5,"timer":0.4955933},
-             "direction":"right","dx":0,"dy":0,"height":16,"texture":"creatures","width":16,"x":865.660705,"y":82},
-             {"currentAnimation":{"currentFrame":1,"frames":[51],"interval":1,"timer":0},
-              "direction":"right","dx":0,"dy":0,"height":16,"texture":"creatures","width":16,"x":1097.888309,"y":50},
-              {"currentAnimation":{"currentFrame":2,"frames":[49,50],"interval":0.5,"timer":0.4955933},
-               "direction":"left","dx":0,"dy":0,"height":16,"texture":"creatures","width":16,"x":1246.251543,"y":82}],
-               
-               "objects":[{"collidable":false,"frame":13,"height":16,"texture":"bushes","width":16,"x":96,"y":80},
-                          {"collidable":true,"consumable":true,"frame":1,"height":16,"key":true,"solid":false,"texture":"keys-and-locks","width":16,"x":336,"y":80},
-                          {"collidable":false,"frame":16,"height":16,"texture":"bushes","width":16,"x":352,"y":80},
-                          {"collidable":true,"frame":22,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":432,"y":48},
-                          {"collidable":true,"frame":9,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":448,"y":48},
-                          {"collidable":true,"frame":19,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":512,"y":16},
-                          {"collidable":false,"frame":5,"height":16,"texture":"bushes","width":16,"x":624,"y":80},
-                          {"collidable":true,"frame":11,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":880,"y":48},
-                          {"collidable":false,"frame":21,"height":16,"texture":"bushes","width":16,"x":944,"y":80},
-                          {"collidable":false,"frame":23,"height":16,"texture":"bushes","width":16,"x":992,"y":80},
-                          {"collidable":true,"frame":12,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":1072,"y":48},
-                          {"collidable":true,"frame":12,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":1088,"y":16},
-                          {"collidable":true,"consumable":true,"frame":5,"height":16,"key":false,"solid":false,"texture":"keys-and-locks","width":16,"x":1280,"y":80},
-                          {"collidable":false,"frame":21,"height":16,"texture":"bushes","width":16,"x":1392,"y":80},
-                          {"collidable":true,"frame":26,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":1440,"y":48},
-                          {"collidable":true,"frame":19,"height":16,"hit":false,"solid":true,"texture":"jump-blocks","width":16,"x":1504,"y":48},
-                          {"collidable":false,"frame":20,"height":16,"texture":"bushes","width":16,"x":1584,"y":80}],
-                          
-                "player":{"consumingKey":false,"currentAnimation":
-                          {"currentFrame":1,"frames":[3],"interval":1,"timer":0},
-                          "direction":"right","dx":0,"dy":-60,"height":20,"key":0,"score":100,"texture":"green-alien","width":16,"x":1.8670499999999,"y":14.2447888},
-                          "tileMatrix":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                                        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                                        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                                        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-                                        [0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
-                                        [0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
-                                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-                                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-                                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-                                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],16]}'''
+        '''{
+            "entities":[{"dx":0,"dy":0,"x":224,"y":82},{"dx":0,"dy":0,"x":656,"y":82},{"dx":0,"dy":0,"x":736,"y":82},{"dx":0,"dy":0,"x":864,"y":82}],
+            "objects":[{"texture":"jump-blocks","x":112,"y":48},{"texture":"keys-and-locks","x":368,"y":80},{"texture":"jump-blocks","x":1040,"y":48},
+                        {"texture":"jump-blocks","x":1168,"y":48},{"texture":"keys-and-locks","x":1264,"y":80},{"texture":"jump-blocks","x":1456,"y":48},
+                        {"texture":"jump-blocks","x":1568,"y":48}],
+            "player":{"dx":0,"dy":0,"score":0,"x":0,"y":76},
+            "tileMatrix":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                          [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0],
+                          [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0],
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],16]}'''
         # JSON to observation!!
         return 0
 
