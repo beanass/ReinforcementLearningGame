@@ -4,20 +4,27 @@ from pynput.keyboard import Key, Controller
 from GymCustomEnv.customEnv import CustomEnv
 import time
 
-from GymCustomEnv.deepQLearning import build_model
+from GymCustomEnv.deepQLearning import build_model, DQNAgent
 
 def main():
     env = CustomEnv()
-    observation = env.reset()      
+    state = env.reset()      
     done = False
 
     model = build_model(len(env.observation_space), env.action_space.n)
-    #model = QNetwork(len(env.observation_space), env.action_space.n)
-
+    agent = DQNAgent (len(env.observation_space), env.action_space.n)
+    #agent.load_model('model.pth')
+    
     while not done:
-        action = env.action_space.sample()
+        # action = env.action_space.sample()
+        action = agent.choose_action(state)
         observation, reward, done, info = env.step(action)
+        agent.remember(observation, action, reward, observation, done)
+        state = observation
+        #agent.replay(batch_size)
+    agent.update_target_network()
         #env.render()
+    agent.save_model('model.pth')
     env.close()
 
 if __name__ == "__main__":  

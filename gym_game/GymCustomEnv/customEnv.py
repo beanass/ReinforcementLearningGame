@@ -26,10 +26,10 @@ class CustomEnv(Env):
         self.action_space = spaces.Discrete(3)
         # data we get from the game
         self.observation_space = spaces.Dict({
-            "entities": spaces.MultiDiscrete([1000] * 4),  # dx, dy, x, y 
-            "objects": spaces.MultiDiscrete([1000] * 7),  # x, y 
+            "entities": spaces.MultiDiscrete([1000] * 40),  # dx, dy, x, y
+            "objects": spaces.MultiDiscrete([1000] * 70),  # x, y
             "player": spaces.MultiDiscrete([1000] * 5),  # dx, dy, score, x, y
-            "tileMatrix": spaces.MultiDiscrete([2] * 170)  # 10x17 tile matrix with binary values
+            "tileMatrix": spaces.MultiDiscrete([2] * 200)  # 10x20 tile matrix with binary values
         })
 
         # socket
@@ -57,7 +57,7 @@ class CustomEnv(Env):
         self.temp_score = 0
         self.temp_x = 0
         self.done = False
-        return 0
+        return None
         #self._receive_data()
         #return self._process_observation()
 
