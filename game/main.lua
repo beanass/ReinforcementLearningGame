@@ -30,6 +30,8 @@ server:bind("127.0.0.1", 8080)
 server:listen(1)
 server:settimeout(0)
 
+messageSize = 32
+
 local client = nil
 
 local function sendGameState(client, gameState)
@@ -119,6 +121,7 @@ end
 
 function getGameState(gStateMachine)
     gameState = {}
+    newState = {}
 
     newPlayer = shallowcopy(gStateMachine.current.player)
     player = {}
@@ -130,6 +133,9 @@ function getGameState(gStateMachine)
     player.hasKey = newPlayer.hasKey
     gameState.player = player
     playerX = newPlayer.x
+
+    newState.playerX = newPlayer.x
+    newState.score = newPlayer.score
 
     entityTable = {}
     for k, entity in pairs(gStateMachine.current.level.entities) do
@@ -173,10 +179,9 @@ function getGameState(gStateMachine)
         end
         table.insert(tileMatrix, tileRow)
     end
-    table.insert(tileMatrix, TILE_SIZE)
     gameState.tileMatrix = tileMatrix
 
-    return gameState
+    return newState
 end
 
 function shallowcopy(orig)

@@ -8,6 +8,8 @@ def main():
     game_cmd = ['C:\\Program Files\\LOVE\\love.exe', 'game']
     game_process = subprocess.Popen(game_cmd)
 
+    time.sleep(3)
+
     env = CustomEnv()
     observation = env.reset()      
     done = False

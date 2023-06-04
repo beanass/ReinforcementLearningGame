@@ -6,6 +6,9 @@ from gym import Env
 from gym import spaces
 import numpy as np
 from pynput.keyboard import Key, Controller
+import json
+from PIL import ImageGrab
+import win32gui
 
 class CustomEnv(Env):
 
@@ -15,21 +18,30 @@ class CustomEnv(Env):
         # actions: left,right,up
         self.action_space = spaces.Discrete(3)
         # data we get from the game
-        self.observation_space = spaces.Discrete(10)        
+
+        self.observation_space = spaces.Box(low=0, high=255, shape=(759, 1296, 3), dtype=np.uint8)     
         #self.game_cmd = ['C:\\Program Files\\LOVE\\love.exe', '..\\game']
         #self.game_process = subprocess.Popen(self.game_cmd)#
 
-        #self.game_socket_rcv = ['python', 'python\\socketpy.py']
-        #self.socket_process = subprocess.Popen(self.game_socket_rcv)
+        self.last_score = 0
+        self.current_reward = 0
+        self.last_x = 0
+
+        self.game_socket_rcv = ['python', 'python\\socketpy.py']
+        self.socket_process = subprocess.Popen(self.game_socket_rcv)
         self.HOST = '127.0.0.1'
         self.PORT = 8080
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.HOST, self.PORT))
-        self.filename = 'game_state.json'
+        #self.filename = 'game_state.json'
         # Initialize variables for stdout and stderr
         self.stdout = None
         self.stderr = None
         self.keyboard = Controller()
+
+        self.hwnd = win32gui.FindWindow(None, r'Super 50 Bros.')
+        win32gui.SetForegroundWindow(self.hwnd)
+        self.dimensions = win32gui.GetWindowRect(self.hwnd)
 
     def __delete__(self):
         """initialize environment"""
@@ -62,20 +74,46 @@ class CustomEnv(Env):
             self.keyboard.press(Key.up)
             time.sleep(1./60)
             self.keyboard.release(Key.up)
+        
         data = self._receive_data()
-        print(data)
+        #print(data)
+
+        reward = self._process_reward(data)
+
         observation = self._process_observation()
-        reward = 0  # Replace with your reward logic
         done = False  # Replace with your termination condition
         info = {}  # Additional information
 
         return observation, reward, done, info
 
+    def _process_reward(self, data):
+        str_data = data.decode("utf-8")
+        
+        #str_data = str_data.split('#')[0]
+        print(str_data)
+        #str_data = str_data.replace("[", '')
+        #str_data = str_data.replace("]", '')
+        #parsed_data = str_data.split(',')
+        parsed_data = json.loads(str_data)
+        score = int(parsed_data['score'])
+        new_score = score - self.last_score
+        reward = new_score / 1000.0
+        self.last_score = score
+
+        player_x = float(parsed_data['playerX'])
+        new_x = player_x - self.last_x
+        reward += new_x
+        self.last_x = player_x
+
+        #print(reward)
+
+        return reward
+
     def _receive_data(self):
         # Receive data from the socket and store it in a JSON file
         while True:
             try:
-                data = self.socket.recv(8192)
+                data = self.socket.recv(32)
                 return data
             except Exception as err:
                 print(err)
@@ -97,9 +135,12 @@ class CustomEnv(Env):
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],16]}'''
+                          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
+            }'''
         # JSON to observation!!
-        return 0
+        image = ImageGrab.grab(self.dimensions)
+        np_img = np.array(image)
+        return np_img
 
     def render(self):
         pass
