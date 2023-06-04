@@ -1,4 +1,4 @@
 # {Package}=={Versionnumber}
 gym == 0.26.2
 pynput == 1.3.7
-pyautogui
+torch == 2.0.1

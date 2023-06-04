@@ -12,24 +12,39 @@ class CustomEnv(Env):
     def __init__(self):
         """initialize environment"""
         super(CustomEnv, self).__init__()
+
+        game_cmd = ['C:\\Program Files\\LOVE\\love.exe', 'game']
+        game_process = subprocess.Popen(game_cmd)
+        time.sleep(3)
+        print("sleep over")
+        keyboard = Controller()
+        keyboard.press(Key.up)
+        time.sleep(0.5)
+        keyboard.release(Key.up)
+
         # actions: left,right,up
         self.action_space = spaces.Discrete(3)
         # data we get from the game
-        self.observation_space = spaces.Discrete(10)        
-        #self.game_cmd = ['C:\\Program Files\\LOVE\\love.exe', '..\\game']
-        #self.game_process = subprocess.Popen(self.game_cmd)#
+        self.observation_space = spaces.Dict({
+            "entities": spaces.MultiDiscrete([1000] * 4),  # dx, dy, x, y 
+            "objects": spaces.MultiDiscrete([1000] * 7),  # x, y 
+            "player": spaces.MultiDiscrete([1000] * 5),  # dx, dy, score, x, y
+            "tileMatrix": spaces.MultiDiscrete([2] * 170)  # 10x17 tile matrix with binary values
+        })
 
-        #self.game_socket_rcv = ['python', 'python\\socketpy.py']
-        #self.socket_process = subprocess.Popen(self.game_socket_rcv)
+        # socket
         self.HOST = '127.0.0.1'
         self.PORT = 8080
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.HOST, self.PORT))
-        self.filename = 'game_state.json'
+
         # Initialize variables for stdout and stderr
         self.stdout = None
         self.stderr = None
         self.keyboard = Controller()
+        #reward vars
+        temp_score = 0
+        temp_x = 0
 
     def __delete__(self):
         """initialize environment"""
@@ -39,8 +54,8 @@ class CustomEnv(Env):
     def reset(self):
         """reset environment"""
         # Reset the environment to its initial state
-        #with open(self.filename, 'w', encoding='utf-8') as f:
-        #    f.write('')
+        self.temp_score = 0
+        self.temp_x = 0
         self.done = False
         return 0
         #self._receive_data()
@@ -50,38 +65,32 @@ class CustomEnv(Env):
         """this function defines what to do in every step"""
         # Take a step in the environment based on the action
         # ... perform action and receive data from the socket ...
-        if action == 0:
-            self.keyboard.press(Key.right)
-            time.sleep(1./60)
-            self.keyboard.release(Key.right)
-        elif action == 1:
-            self.keyboard.press(Key.left)
-            time.sleep(1./60)
-            self.keyboard.release(Key.left)
-        elif action == 2:
-            self.keyboard.press(Key.up)
-            time.sleep(1./60)
-            self.keyboard.release(Key.up)
+        self.walk(action)
         data = self._receive_data()
-        print(data)
-        observation = self._process_observation()
-        reward = 0  # Replace with your reward logic
-        done = False  # Replace with your termination condition
+        observation = self._process_observation(data)
+        reward = self._calculate_reward(observation)
+        done = False  # TODO: Game End
         info = {}  # Additional information
 
         return observation, reward, done, info
 
-    def _receive_data(self):
-        # Receive data from the socket and store it in a JSON file
-        while True:
-            try:
-                data = self.socket.recv(8192)
-                return data
-            except Exception as err:
-                print(err)
+    def _calculate_reward(self, data):
+        reward = 0
+        if data['player']['score'] > self.temp_score:
+            reward += 0.5
+        elif data['player']['score'] > self.temp_score:
+            reward -= 0.5
+        if data['player']['x'] > self.temp_x:
+            reward += 0.1
+        elif data['player']['x'] < self.temp_x:
+            reward -= 0.1
 
-    def _process_observation(self):
-        # TODO: Process the current observation from the socket output
+        self.temp_score = data['player']['score']
+        self.temp_x = data['player']['x']
+
+        return reward
+
+    def _process_observation(self, data):
         '''{
             "entities":[{"dx":0,"dy":0,"x":224,"y":82},{"dx":0,"dy":0,"x":656,"y":82},{"dx":0,"dy":0,"x":736,"y":82},{"dx":0,"dy":0,"x":864,"y":82}],
             "objects":[{"texture":"jump-blocks","x":112,"y":48},{"texture":"keys-and-locks","x":368,"y":80},{"texture":"jump-blocks","x":1040,"y":48},
@@ -98,8 +107,54 @@ class CustomEnv(Env):
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                           [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],16]}'''
-        # JSON to observation!!
-        return 0
+        if not data:
+            return None
+        try:
+            # Parse the JSON data
+            json_data = json.loads(data)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON data: {e}")
+            return None
+
+        entities = json_data['entities']
+        objects = json_data['objects']
+        player = json_data['player']
+        tileMatrix = json_data['tileMatrix']
+
+        observation = {
+            "entities": entities,
+            "objects": objects,
+            "player": player,
+            "tileMatrix": tileMatrix
+        }
+        return observation
+
+    def walk(self, direction):
+        # walk right
+        if direction == 0:
+            self.keyboard.press(Key.right)
+            time.sleep(1./60)
+            self.keyboard.release(Key.right)
+        # walk left
+        elif direction == 1:
+            self.keyboard.press(Key.left)
+            time.sleep(1./60)
+            self.keyboard.release(Key.left)
+        # walk up
+        elif direction == 2:
+            self.keyboard.press(Key.up)
+            time.sleep(1./60)
+            self.keyboard.release(Key.up)
+
+    def _receive_data(self):
+        # Receive data from the socket and store it in a JSON file
+        while True:
+            try:
+                data = self.socket.recv(8192)
+                data_str = data.decode('utf-8')  # Convert byte string to regular string
+                return data_str.split('\n')[-2]
+            except Exception as err:
+                print(err)
 
     def render(self):
         pass
