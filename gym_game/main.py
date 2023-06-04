@@ -19,13 +19,14 @@ def main():
         # action = env.action_space.sample()
         action = agent.choose_action(state)
         observation, reward, done, info = env.step(action)
-        agent.remember(observation, action, reward, observation, done)
+        agent.remember(state, action, reward, observation, done)
+        #agent.memory.append(observation, action, reward, done)
         state = observation
-        #agent.replay(batch_size)
+        agent.replay()
     agent.update_target_network()
         #env.render()
     agent.save_model('model.pth')
     env.close()
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     main()
