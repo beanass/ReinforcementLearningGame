@@ -16,7 +16,7 @@ class CustomEnv(Env):
         super(CustomEnv, self).__init__()
 
         game_cmd = ['C:\\Program Files\\LOVE\\love.exe', 'game']
-        game_process = subprocess.Popen(game_cmd)
+        self.game_process = subprocess.Popen(game_cmd)
         time.sleep(3)
         print("sleep over")
         keyboard = Controller()
@@ -47,8 +47,8 @@ class CustomEnv(Env):
         self.stderr = None
         self.keyboard = Controller()
         #reward vars
-        temp_score = 0
-        temp_x = 0
+        self.temp_score = 0
+        self.temp_x = 0
 
         self.hwnd = win32gui.FindWindow(None, r'Super 50 Bros.')
         win32gui.SetForegroundWindow(self.hwnd)
@@ -57,7 +57,7 @@ class CustomEnv(Env):
     def __delete__(self):
         """initialize environment"""
         self.game_process.kill()
-        self.socket_process.kill()
+        #self.socket_process.kill()
 
     def reset(self):
         """reset environment"""
@@ -146,20 +146,21 @@ class CustomEnv(Env):
         return observation, data
 
     def walk(self, direction):
+        const_fps = 1./60 # change movement duration here
         # walk right
         if direction == 0:
             self.keyboard.press(Key.right)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.right)
         # walk left
         elif direction == 1:
             self.keyboard.press(Key.left)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.left)
         # walk up
         elif direction == 2:
             self.keyboard.press(Key.up)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.up)
 
     def _receive_data(self):
