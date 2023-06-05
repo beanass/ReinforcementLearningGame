@@ -61,7 +61,7 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def replay(self, batch_size):
+    def replay(self, batch_size = 50):
         if len(self.memory) < batch_size:
             return
 
@@ -70,7 +70,22 @@ class DQNAgent:
         for idx in batch:
             state, action, reward, next_state, done = self.memory[idx]
             states.append(state)
-            q_values = self.q_network(torch.FloatTensor(state)).detach().numpy()
+
+            # Extract relevant values from the dictionary
+            entities_values = [[entity["dx"], entity["dy"], entity["x"], entity["y"]] for entity in state["entities"]]
+            objects_values = [[obj["x"], obj["y"]] for obj in state["objects"]]
+            player_values = [state["player"]["dx"], state["player"]["dy"], state["player"]["score"], state["player"]["x"], state["player"]["y"]]
+            tile_matrix_values = state["tileMatrix"]
+
+            # Convert the values to tensors
+            entities_tensor = torch.tensor(entities_values)
+            objects_tensor = torch.tensor(objects_values)
+            player_tensor = torch.tensor(player_values)
+            tile_matrix_tensor = torch.tensor(tile_matrix_values, dtype=torch.float32)
+
+            combined_tensor = torch.cat([entities_tensor, objects_tensor, player_tensor.unsqueeze(0), tile_matrix_tensor.unsqueeze(0)], dim=0)
+
+            q_values = self.q_network(torch.FloatTensor(combined_tensor)).detach().numpy()
             if done:
                 q_values[action] = reward
             else:
@@ -89,6 +104,7 @@ class DQNAgent:
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+        print(self.epsilon)
 
     def save_model(self, filepath):
         torch.save(self.q_network.state_dict(), filepath)
