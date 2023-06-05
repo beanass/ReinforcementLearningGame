@@ -17,6 +17,16 @@ def build_model(input_shape, num_actions):
     )
     return model
 
+def process_state(state):
+    if isinstance(state, dict):
+        state_values = [process_state(value) for value in state.values()]
+        return state_values
+    elif isinstance(state, list):
+        state_values = [process_state(value) for value in state]
+        return state_values
+    else:
+        return state
+
 class DQNAgent:
     def __init__(self, state_shape, action_space):
         self.state_shape = state_shape
@@ -54,6 +64,7 @@ class DQNAgent:
             action = np.random.randint(self.action_space)
         else:
             with torch.no_grad():
+                state = state.flatten()
                 q_values = self.q_network(torch.FloatTensor(state))
                 action = torch.argmax(q_values).item()
         return action
@@ -69,16 +80,23 @@ class DQNAgent:
         states, targets = [], []
         for idx in batch:
             state, action, reward, next_state, done = self.memory[idx]
+            if state is None or next_state is None:
+                continue
+            state = state.flatten()
             states.append(state)
+
             q_values = self.q_network(torch.FloatTensor(state)).detach().numpy()
             if done:
                 q_values[action] = reward
             else:
+                next_state = next_state.flatten()
                 next_q_values = self.target_network(torch.FloatTensor(next_state)).detach().numpy()
                 q_values[action] = reward + self.gamma * np.max(next_q_values)
             targets.append(q_values)
 
+        states = np.array(states)
         states = torch.FloatTensor(states)
+        targets = np.array(targets)
         targets = torch.FloatTensor(targets)
 
         self.optimizer.zero_grad()
@@ -96,3 +114,4 @@ class DQNAgent:
     def load_model(self, filepath):
         self.q_network.load_state_dict(torch.load(filepath))
         self.target_network.load_state_dict(self.q_network.state_dict())
+

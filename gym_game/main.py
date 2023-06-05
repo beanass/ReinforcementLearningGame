@@ -11,17 +11,19 @@ def main():
     state = env.reset()      
     done = False
 
-    model = build_model(len(env.observation_space), env.action_space.n)
-    agent = DQNAgent (len(env.observation_space), env.action_space.n)
+    space_shape = env.observation_space.shape
+
+    model = build_model(space_shape[0]*space_shape[1]*space_shape[2], env.action_space.n)
+    agent = DQNAgent (space_shape[0]*space_shape[1]*space_shape[2], env.action_space.n)
     #agent.load_model('model.pth')
     
     while not done:
         # action = env.action_space.sample()
         action = agent.choose_action(state)
         observation, reward, done, info = env.step(action)
-        agent.remember(observation, action, reward, observation, done)
+        agent.remember(state, action, reward, observation, done)
         state = observation
-        #agent.replay(batch_size)
+        agent.replay(2)
     agent.update_target_network()
         #env.render()
     agent.save_model('model.pth')

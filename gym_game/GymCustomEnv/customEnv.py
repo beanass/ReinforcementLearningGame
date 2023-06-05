@@ -6,6 +6,8 @@ from gym import Env
 from gym import spaces
 import numpy as np
 from pynput.keyboard import Key, Controller
+from PIL import ImageGrab, Image
+import win32gui
 
 class CustomEnv(Env):
 
@@ -25,12 +27,14 @@ class CustomEnv(Env):
         # actions: left,right,up
         self.action_space = spaces.Discrete(3)
         # data we get from the game
-        self.observation_space = spaces.Dict({
+        '''self.observation_space = spaces.Dict({
             "entities": spaces.MultiDiscrete([1000] * 40),  # dx, dy, x, y
             "objects": spaces.MultiDiscrete([1000] * 70),  # x, y
             "player": spaces.MultiDiscrete([1000] * 5),  # dx, dy, score, x, y
             "tileMatrix": spaces.MultiDiscrete([2] * 200)  # 10x20 tile matrix with binary values
-        })
+        })'''
+
+        self.observation_space = spaces.Box(low=0, high=255, shape=(144, 256, 3), dtype=np.uint8)
 
         # socket
         self.HOST = '127.0.0.1'
@@ -45,6 +49,10 @@ class CustomEnv(Env):
         #reward vars
         temp_score = 0
         temp_x = 0
+
+        self.hwnd = win32gui.FindWindow(None, r'Super 50 Bros.')
+        win32gui.SetForegroundWindow(self.hwnd)
+        self.dimensions = win32gui.GetWindowRect(self.hwnd)
 
     def __delete__(self):
         """initialize environment"""
@@ -67,8 +75,8 @@ class CustomEnv(Env):
         # ... perform action and receive data from the socket ...
         self.walk(action)
         data = self._receive_data()
-        observation = self._process_observation(data)
-        reward = self._calculate_reward(observation)
+        observation, data = self._process_observation(data)
+        reward = self._calculate_reward(data)
         done = False  # TODO: Game End
         info = {}  # Additional information
 
@@ -78,15 +86,17 @@ class CustomEnv(Env):
         reward = 0
         if data['player']['score'] > self.temp_score:
             reward += 0.5
-        elif data['player']['score'] > self.temp_score:
+        elif data['player']['score'] < self.temp_score:
             reward -= 0.5
         if data['player']['x'] > self.temp_x:
-            reward += 0.1
-        elif data['player']['x'] < self.temp_x:
-            reward -= 0.1
+            reward += 1
+        elif data['player']['x'] <= self.temp_x:
+            reward -= 5
 
         self.temp_score = data['player']['score']
         self.temp_x = data['player']['x']
+
+        #print(reward)
 
         return reward
 
@@ -121,13 +131,19 @@ class CustomEnv(Env):
         player = json_data['player']
         tileMatrix = json_data['tileMatrix']
 
-        observation = {
+        data = {
             "entities": entities,
             "objects": objects,
             "player": player,
             "tileMatrix": tileMatrix
         }
-        return observation
+
+        image = ImageGrab.grab(self.dimensions)
+        im1 = image.crop((8, 39, 1288, 759))
+        im1 = im1.resize((256, 144))
+        observation = np.array(im1)
+
+        return observation, data
 
     def walk(self, direction):
         # walk right
