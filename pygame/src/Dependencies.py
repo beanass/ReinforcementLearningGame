@@ -1,6 +1,11 @@
 import pygame
+import os
 
-def gemerateQuads(atlas, tileWidth, tileHeight):
+pygame.init()
+
+print(os.getcwd())
+
+def generateQuads(atlas, tileWidth, tileHeight):
     sheetWidth = atlas.get_width() // tileWidth
     sheetHeight = atlas.get_height() // tileHeight
 
@@ -33,31 +38,31 @@ def generateTileSets(quads, setsX, setsY, sizeX, sizeY):
     return tileSets
 
 gSounds = {
-    "jump": pygame.mixer.Sound("sounds/jump.wav"),
-    "death": pygame.mixer.Sound("sounds/death.wav"),
-    "music": pygame.mixer.music.load("sounds/music.wav"),
-    "powerup-reveal": pygame.mixer.Sound("sounds/powerup-reveal.wav"),
-    "pickup": pygame.mixer.Sound("sounds/pickup.wav"),
-    "empty-block": pygame.mixer.Sound("sounds/empty-block.wav"),
-    "kill": pygame.mixer.Sound("sounds/kill.wav"),
-    "kill2": pygame.mixer.Sound("sounds/kill2.wav")
+    "jump": pygame.mixer.Sound("pygame/sounds/jump.wav"),
+    "death": pygame.mixer.Sound("pygame/sounds/death.wav"),
+    "music": pygame.mixer.music.load("pygame/sounds/music.wav"),
+    "powerup-reveal": pygame.mixer.Sound("pygame/sounds/powerup-reveal.wav"),
+    "pickup": pygame.mixer.Sound("pygame/sounds/pickup.wav"),
+    "empty-block": pygame.mixer.Sound("pygame/sounds/empty-block.wav"),
+    "kill": pygame.mixer.Sound("pygame/sounds/kill.wav"),
+    "kill2": pygame.mixer.Sound("pygame/sounds/kill2.wav")
 }
 
 gTextures = {
-    "tiles": pygame.image.load("graphics/tiles.png"),
-    "toppers": pygame.image.load("graphics/tile_tops.png"),
-    "bushes": pygame.image.load("graphics/bushes_and_cacti.png"),
-    "jump-blocks": pygame.image.load("graphics/jump_blocks.png"),
-    "gems": pygame.image.load("graphics/gems.png"),
-    "backgrounds": pygame.image.load("graphics/backgrounds.png"),
-    "green-alien": pygame.image.load("graphics/green_alien.png"),
-    "creatures": pygame.image.load("graphics/creatures.png"),
-    "keys-and-locks": pygame.image.load("graphics/keys_and_locks.png"),
-    "flags": pygame.image.load("graphics/flags.png")
+    "tiles": pygame.image.load("pygame/graphics/tiles.png"),
+    "toppers": pygame.image.load("pygame/graphics/tile_tops.png"),
+    "bushes": pygame.image.load("pygame/graphics/bushes_and_cacti.png"),
+    "jump-blocks": pygame.image.load("pygame/graphics/jump_blocks.png"),
+    "gems": pygame.image.load("pygame/graphics/gems.png"),
+    "backgrounds": pygame.image.load("pygame/graphics/backgrounds.png"),
+    "green-alien": pygame.image.load("pygame/graphics/green_alien.png"),
+    "creatures": pygame.image.load("pygame/graphics/creatures.png"),
+    "keys-and-locks": pygame.image.load("pygame/graphics/keys_and_locks.png"),
+    "flags": pygame.image.load("pygame/graphics/flags.png")
 }
 
 gFrames = {
-    "tiles": gemerateQuads(gTextures["tiles"], 16, 16),
+    "tiles": generateQuads(gTextures["tiles"], 16, 16),
     "toppers": generateQuads(gTextures["toppers"], 16, 16),
     "bushes": generateQuads(gTextures["bushes"], 16, 16),
     "jump-blocks": generateQuads(gTextures["jump-blocks"], 16, 16),
@@ -66,15 +71,16 @@ gFrames = {
     "green-alien": generateQuads(gTextures["green-alien"], 16, 20),
     "creatures": generateQuads(gTextures["creatures"], 16, 16),
     "keys-and-locks": generateQuads(gTextures["keys-and-locks"], 16, 16),
-    "flags": generateQuads(gTextures["flags"], 16, 16),
-    "tilesets": generateTileSets(gFrames["tiles"], 6, 10, 5, 4),
-    "toppersets": generateTileSets(gFrames["toppers"], 6, 18, 5, 4)
+    "flags": generateQuads(gTextures["flags"], 16, 16)
 }
 
+gFrames["tilesets"] = generateTileSets(gFrames["tiles"], 6, 10, 5, 4)
+gFrames["toppersets"] = generateTileSets(gFrames["toppers"], 6, 18, 5, 4)
+
 gFonts = {
-    "small": pygame.font.Font("fonts/font.ttf", 8),
-    "medium": pygame.font.Font("fonts/font.ttf", 16),
-    "large": pygame.font.Font("fonts/font.ttf", 32),
-    "title": pygame.font.Font("fonts/ArcadeAlternate.ttf", 32)
+    "small": pygame.font.Font("pygame/fonts/font.ttf", 8),
+    "medium": pygame.font.Font("pygame/fonts/font.ttf", 16),
+    "large": pygame.font.Font("pygame/fonts/font.ttf", 32),
+    "title": pygame.font.Font("pygame/fonts/ArcadeAlternate.ttf", 32)
 }
 

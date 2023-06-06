@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from src import constants
+from src import constants, Dependencies
 
 class SuperBros:
     def __init__(self):
@@ -10,7 +10,9 @@ class SuperBros:
 
     def on_init(self):
         pygame.init()
-        self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self._display_screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self._display_surf = pygame.Surface((constants.VIRTUAL_WIDTH, constants.VIRTUAL_HEIGHT))
+        pygame.display.set_caption('Super 50 Bros.')
         self._running = True
 
     def on_event(self, event):
@@ -21,6 +23,8 @@ class SuperBros:
         pass
 
     def on_render(self):
+        self._display_surf.blit(Dependencies.gTextures["backgrounds"], (0, 0))
+        pygame.display.update()
         pass
 
     def on_cleanup(self):
