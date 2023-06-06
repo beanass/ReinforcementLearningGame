@@ -13,6 +13,7 @@ class SuperBros:
         self._display_screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._display_surf = pygame.Surface((constants.VIRTUAL_WIDTH, constants.VIRTUAL_HEIGHT))
         pygame.display.set_caption('Super 50 Bros.')
+        pygame.font.init()
         self._running = True
 
     def on_event(self, event):
@@ -24,8 +25,13 @@ class SuperBros:
 
     def on_render(self):
         self._display_surf.blit(Dependencies.gFrames["backgrounds"][0], (0, 0))
-        self._display_screen.blit(pygame.transform.scale(self._display_surf, self.size), (0, 0))
+        text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (0, 0, 0))
+        self._display_surf.blit(text_surface, (constants.VIRTUAL_WIDTH / 2 - text_surface.get_width() / 2, constants.VIRTUAL_HEIGHT / 2 - 40 + 1))
+        text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (255, 255, 255))
+        self._display_surf.blit(text_surface, (constants.VIRTUAL_WIDTH / 2 - text_surface.get_width() / 2, constants.VIRTUAL_HEIGHT / 2 - 40))
         
+        self._display_screen.blit(pygame.transform.scale(self._display_surf, self.size), (0, 0))
+
         pygame.display.update()
         pass
 
