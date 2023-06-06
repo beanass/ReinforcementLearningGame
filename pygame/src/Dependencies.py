@@ -37,6 +37,15 @@ def generateTileSets(quads, setsX, setsY, sizeX, sizeY):
 
     return tileSets
 
+def getSurfaces(spritesheet, width, height):
+    surfaces = []
+    
+    surfaces.append(spritesheet.subsurface(pygame.Rect(0, 0, width, height)))
+    surfaces.append(spritesheet.subsurface(pygame.Rect(0, height, width, height)))
+    surfaces.append(spritesheet.subsurface(pygame.Rect(0, height * 2, width, height)))
+
+    return surfaces
+
 gSounds = {
     "jump": pygame.mixer.Sound("pygame/sounds/jump.wav"),
     "death": pygame.mixer.Sound("pygame/sounds/death.wav"),
@@ -67,7 +76,7 @@ gFrames = {
     "bushes": generateQuads(gTextures["bushes"], 16, 16),
     "jump-blocks": generateQuads(gTextures["jump-blocks"], 16, 16),
     "gems": generateQuads(gTextures["gems"], 16, 16),
-    "backgrounds": generateQuads(gTextures["backgrounds"], 256, 128),
+    "backgrounds": getSurfaces(gTextures["backgrounds"], 256, 128),
     "green-alien": generateQuads(gTextures["green-alien"], 16, 20),
     "creatures": generateQuads(gTextures["creatures"], 16, 16),
     "keys-and-locks": generateQuads(gTextures["keys-and-locks"], 16, 16),

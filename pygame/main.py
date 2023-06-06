@@ -23,7 +23,9 @@ class SuperBros:
         pass
 
     def on_render(self):
-        self._display_surf.blit(Dependencies.gTextures["backgrounds"], (0, 0))
+        self._display_surf.blit(Dependencies.gFrames["backgrounds"][0], (0, 0))
+        self._display_screen.blit(pygame.transform.scale(self._display_surf, self.size), (0, 0))
+        
         pygame.display.update()
         pass
 
