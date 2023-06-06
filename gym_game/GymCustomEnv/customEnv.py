@@ -14,7 +14,7 @@ class CustomEnv(Env):
         super(CustomEnv, self).__init__()
 
         game_cmd = ['C:\\Program Files\\LOVE\\love.exe', 'game']
-        game_process = subprocess.Popen(game_cmd)
+        self.game_process = subprocess.Popen(game_cmd)
         time.sleep(3)
         print("sleep over")
         keyboard = Controller()
@@ -43,13 +43,13 @@ class CustomEnv(Env):
         self.stderr = None
         self.keyboard = Controller()
         #reward vars
-        temp_score = 0
-        temp_x = 0
+        self.temp_score = 0
+        self.temp_x = 0
 
     def __delete__(self):
         """initialize environment"""
         self.game_process.kill()
-        self.socket_process.kill()
+        #self.socket_process.kill()
 
     def reset(self):
         """reset environment"""
@@ -78,15 +78,16 @@ class CustomEnv(Env):
         reward = 0
         if data['player']['score'] > self.temp_score:
             reward += 0.5
-        elif data['player']['score'] > self.temp_score:
+        elif data['player']['score'] < self.temp_score:
             reward -= 0.5
         if data['player']['x'] > self.temp_x:
-            reward += 0.1
-        elif data['player']['x'] < self.temp_x:
-            reward -= 0.1
+            reward += 1
+        elif data['player']['x'] <= self.temp_x:
+            reward -= 5
 
         self.temp_score = data['player']['score']
         self.temp_x = data['player']['x']
+        #print(reward)
 
         return reward
 
@@ -130,20 +131,21 @@ class CustomEnv(Env):
         return observation
 
     def walk(self, direction):
+        const_fps = 1./10 # change movement duration here
         # walk right
         if direction == 0:
             self.keyboard.press(Key.right)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.right)
         # walk left
         elif direction == 1:
             self.keyboard.press(Key.left)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.left)
         # walk up
         elif direction == 2:
             self.keyboard.press(Key.up)
-            time.sleep(1./60)
+            time.sleep(const_fps)
             self.keyboard.release(Key.up)
 
     def _receive_data(self):
