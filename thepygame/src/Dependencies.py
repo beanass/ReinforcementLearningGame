@@ -6,12 +6,12 @@ pygame.init()
 print(os.getcwd())
 
 # Get the base directory of your script
-base_dir = os.path.dirname(os.path.abspath(__file__))
-
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(current_file_dir)
 # Construct the paths to the sound files using the base directory
-sounds_path = os.path.join(base_dir, "pygame", "sounds")
-graphics_path = os.path.join(base_dir, "pygame", "sounds")
-fonts_path = os.path.join(base_dir, "pygame", "fonts")
+sounds_path = os.path.join(base_dir, "sounds")
+graphics_path = os.path.join(base_dir, "graphics")
+fonts_path = os.path.join(base_dir, "fonts")
 
 def generateQuads(atlas, tileWidth, tileHeight):
     sheetWidth = atlas.get_width() // tileWidth
@@ -96,7 +96,7 @@ gFrames["toppersets"] = generateTileSets(gFrames["toppers"], 6, 18, 5, 4)
 
 gFonts = {
     "small": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 8),
-    "medium": pygame.font.Font(os.path.join(fonts_path, "ont.ttf"), 16),
+    "medium": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 16),
     "large": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 32),
     "title": pygame.font.Font(os.path.join(fonts_path, "ArcadeAlternate.ttf"), 32)
 }

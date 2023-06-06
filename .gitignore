@@ -286,3 +286,4 @@ TSWLatexianTemp*
 .idea/
 env/
 test.py
+*__pycache__/
