@@ -5,6 +5,14 @@ pygame.init()
 
 print(os.getcwd())
 
+# Get the base directory of your script
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the paths to the sound files using the base directory
+sounds_path = os.path.join(base_dir, "pygame", "sounds")
+graphics_path = os.path.join(base_dir, "pygame", "sounds")
+fonts_path = os.path.join(base_dir, "pygame", "fonts")
+
 def generateQuads(atlas, tileWidth, tileHeight):
     sheetWidth = atlas.get_width() // tileWidth
     sheetHeight = atlas.get_height() // tileHeight
@@ -47,27 +55,27 @@ def getSurfaces(spritesheet, width, height):
     return surfaces
 
 gSounds = {
-    "jump": pygame.mixer.Sound("pygame/sounds/jump.wav"),
-    "death": pygame.mixer.Sound("pygame/sounds/death.wav"),
-    "music": pygame.mixer.music.load("pygame/sounds/music.wav"),
-    "powerup-reveal": pygame.mixer.Sound("pygame/sounds/powerup-reveal.wav"),
-    "pickup": pygame.mixer.Sound("pygame/sounds/pickup.wav"),
-    "empty-block": pygame.mixer.Sound("pygame/sounds/empty-block.wav"),
-    "kill": pygame.mixer.Sound("pygame/sounds/kill.wav"),
-    "kill2": pygame.mixer.Sound("pygame/sounds/kill2.wav")
+    "jump": pygame.mixer.Sound(os.path.join(sounds_path, "jump.wav")),
+    "death": pygame.mixer.Sound(os.path.join(sounds_path, "death.wav")),
+    "music": pygame.mixer.music.load(os.path.join(sounds_path, "music.wav")),
+    "powerup-reveal": pygame.mixer.Sound(os.path.join(sounds_path, "powerup-reveal.wav")),
+    "pickup": pygame.mixer.Sound(os.path.join(sounds_path, "pickup.wav")),
+    "empty-block": pygame.mixer.Sound(os.path.join(sounds_path, "empty-block.wav")),
+    "kill": pygame.mixer.Sound(os.path.join(sounds_path, "kill.wav")),
+    "kill2": pygame.mixer.Sound(os.path.join(sounds_path, "kill2.wav"))
 }
 
 gTextures = {
-    "tiles": pygame.image.load("pygame/graphics/tiles.png"),
-    "toppers": pygame.image.load("pygame/graphics/tile_tops.png"),
-    "bushes": pygame.image.load("pygame/graphics/bushes_and_cacti.png"),
-    "jump-blocks": pygame.image.load("pygame/graphics/jump_blocks.png"),
-    "gems": pygame.image.load("pygame/graphics/gems.png"),
-    "backgrounds": pygame.image.load("pygame/graphics/backgrounds.png"),
-    "green-alien": pygame.image.load("pygame/graphics/green_alien.png"),
-    "creatures": pygame.image.load("pygame/graphics/creatures.png"),
-    "keys-and-locks": pygame.image.load("pygame/graphics/keys_and_locks.png"),
-    "flags": pygame.image.load("pygame/graphics/flags.png")
+    "tiles": pygame.image.load(os.path.join(graphics_path, "tiles.png")),
+    "toppers": pygame.image.load(os.path.join(graphics_path, "tile_tops.png")),
+    "bushes": pygame.image.load(os.path.join(graphics_path, "bushes_and_cacti.png")),
+    "jump-blocks": pygame.image.load(os.path.join(graphics_path, "jump_blocks.png")),
+    "gems": pygame.image.load(os.path.join(graphics_path, "gems.png")),
+    "backgrounds": pygame.image.load(os.path.join(graphics_path, "backgrounds.png")),
+    "green-alien": pygame.image.load(os.path.join(graphics_path, "green_alien.png")),
+    "creatures": pygame.image.load(os.path.join(graphics_path, "creatures.png")),
+    "keys-and-locks": pygame.image.load(os.path.join(graphics_path, "keys_and_locks.png")),
+    "flags": pygame.image.load(os.path.join(graphics_path, "flags.png"))
 }
 
 gFrames = {
@@ -87,9 +95,9 @@ gFrames["tilesets"] = generateTileSets(gFrames["tiles"], 6, 10, 5, 4)
 gFrames["toppersets"] = generateTileSets(gFrames["toppers"], 6, 18, 5, 4)
 
 gFonts = {
-    "small": pygame.font.Font("pygame/fonts/font.ttf", 8),
-    "medium": pygame.font.Font("pygame/fonts/font.ttf", 16),
-    "large": pygame.font.Font("pygame/fonts/font.ttf", 32),
-    "title": pygame.font.Font("pygame/fonts/ArcadeAlternate.ttf", 32)
+    "small": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 8),
+    "medium": pygame.font.Font(os.path.join(fonts_path, "ont.ttf"), 16),
+    "large": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 32),
+    "title": pygame.font.Font(os.path.join(fonts_path, "ArcadeAlternate.ttf"), 32)
 }
 

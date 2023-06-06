@@ -281,4 +281,8 @@ TSWLatexianTemp*
 # additional
 *.venv
 # please specify if you want to push other json
-*.json 
+*.json
+
+.idea/
+env/
+test.py
