@@ -32,7 +32,7 @@ class DQNAgent:
         self.state_shape = state_shape
         self.action_space = action_space
 
-        self.gamma = 0.9  # Discount factor
+        self.gamma = 0.6  # Discount factor
         self.epsilon = 1.0  # Exploration factor
         self.epsilon_decay = 0.99  # Decay rate for exploration factor
         self.epsilon_min = 0.01  # Minimum exploration factor

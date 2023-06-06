@@ -15,6 +15,7 @@ function Player:init(def)
     self.score = 0
     self.key = 0
     self.consumingKey = false
+    self.dead = false
 end
 
 function Player:update(dt)

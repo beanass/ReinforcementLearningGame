@@ -131,6 +131,7 @@ function getGameState(gStateMachine)
     gameState.player = player
     playerX = newPlayer.x
 
+
     entityTable = {}
     for k, entity in pairs(gStateMachine.current.level.entities) do
         newEntity = shallowcopy(entity)
@@ -173,7 +174,6 @@ function getGameState(gStateMachine)
         end
         table.insert(tileMatrix, tileRow)
     end
-    table.insert(tileMatrix, TILE_SIZE)
     gameState.tileMatrix = tileMatrix
 
     return gameState
