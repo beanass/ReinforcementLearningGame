@@ -1,3 +1,5 @@
+from src import Dependencies
+
 class Entity:
     def __init__(self, x, y, width, height, texture, stateMachine, map, level):
         self.x = x
@@ -28,5 +30,8 @@ class Entity:
         return not (self.x > entity.x + entity.width or entity.x > self.x + self.width or
                 self.y > entity.y + entity.height or entity.y > self.y + self.height)
     
-    def render(self):
-        pass
+    def render(self, surf, screen):
+        surf.blit(Dependencies.gFrames[self.texture][0], (self.x + 8, self.y + 10))
+
+
+        

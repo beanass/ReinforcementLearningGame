@@ -18,7 +18,8 @@ class StartState(BaseState.BaseState):
         pass
 
     def render(self, surf, screen):
-        surf.blit(Dependencies.gFrames["backgrounds"][0], (0, 0))
+        surf.blit(Dependencies.gFrames["backgrounds"][self.background], (0, 0))
+        self.map.render(surf, screen)
         text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (0, 0, 0))
         surf.blit(text_surface, (constants.VIRTUAL_WIDTH / 2 - text_surface.get_width() / 2, constants.VIRTUAL_HEIGHT / 2 - 40 + 1))
         text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (255, 255, 255))

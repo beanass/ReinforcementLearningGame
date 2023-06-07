@@ -15,25 +15,44 @@ def generateQuads(atlas, tileWidth, tileHeight):
 
     return quads
 
-def generateTileSets(quads, setsX, setsY, sizeX, sizeY):
-    tileSets = []
-    tableCounter = 0
+def generateSubsurfaces(spritesheet, width, height):
+    sheetWidth = spritesheet.get_width() // width
+    sheetHeight = spritesheet.get_height() // height
+
+    sheetCounter = 0
+    subsurfaces = []
+
+    for y in range(sheetHeight):
+        for x in range(sheetWidth):
+            subsurfaces.append(spritesheet.subsurface(pygame.Rect(x * width, y * height, width, height)))
+            sheetCounter += 1
+
+    return subsurfaces
+
+def getTileset(spritesheet):
+    for y in range(4):
+        for x in range(5):
+            continue
+    pass
+
+def generateTileSets(tiles, setsX, setsY, sizeX, sizeY):
+    tilesets = []
+    tableCounter = -1
     sheetWidth = setsX * sizeX
     sheetHeight = setsY * sizeY
 
     for tilesetY in range(setsY):
         for tilesetX in range(setsX):
-            tileSet = pygame.Surface((sheetWidth, sheetHeight), pygame.SRCALPHA)
-            tileSet.fill((0, 0, 0, 0))
-            for y in range(sizeY):
-                for x in range(sizeX):
-                    tileSet.blit(gTextures["tiles"], (x * 16, y * 16), quads[tableCounter])
-                    tableCounter += 1
-            tileSets.append(tileSet)
+            tilesets.append([])
+            tableCounter += 1
+            
+            for y in range(sizeY * (tilesetY - 1) + 1, sizeY * (tilesetY - 1) + 1 + sizeY):
+                for x in range(sizeX * (tilesetX - 1) + 1, sizeX * (tilesetX - 1) + 1 + sizeX):
+                    tilesets[tableCounter] = tiles[sheetWidth * (y - 1) + x]
 
-    return tileSets
+    return tilesets
 
-def getSurfaces(spritesheet, width, height):
+def getBackgroundSurfaces(spritesheet, width, height):
     surfaces = []
     
     surfaces.append(spritesheet.subsurface(pygame.Rect(0, 0, width, height)))
@@ -78,16 +97,16 @@ def loadAssets():
     }
 
     gFrames = {
-        "tiles": generateQuads(gTextures["tiles"], 16, 16),
-        "toppers": generateQuads(gTextures["toppers"], 16, 16),
-        "bushes": generateQuads(gTextures["bushes"], 16, 16),
-        "jump-blocks": generateQuads(gTextures["jump-blocks"], 16, 16),
-        "gems": generateQuads(gTextures["gems"], 16, 16),
-        "backgrounds": getSurfaces(gTextures["backgrounds"], 256, 128),
-        "green-alien": generateQuads(gTextures["green-alien"], 16, 20),
-        "creatures": generateQuads(gTextures["creatures"], 16, 16),
-        "keys-and-locks": generateQuads(gTextures["keys-and-locks"], 16, 16),
-        "flags": generateQuads(gTextures["flags"], 16, 16)
+        "tiles": generateSubsurfaces(gTextures["tiles"], 16, 16),
+        "toppers": generateSubsurfaces(gTextures["toppers"], 16, 16),
+        #"bushes": generateQuads(gTextures["bushes"], 16, 16),
+        #"jump-blocks": generateQuads(gTextures["jump-blocks"], 16, 16),
+        "gems": generateSubsurfaces(gTextures["gems"], 16, 16),
+        "backgrounds": generateSubsurfaces(gTextures["backgrounds"], 256, 128),
+        "green-alien": generateSubsurfaces(gTextures["green-alien"], 16, 20),
+        "creatures": generateSubsurfaces(gTextures["creatures"], 16, 16),
+        "keys-and-locks": generateSubsurfaces(gTextures["keys-and-locks"], 16, 16),
+        "flags": generateSubsurfaces(gTextures["flags"], 16, 16)
     }
 
     gFrames["tilesets"] = generateTileSets(gFrames["tiles"], 6, 10, 5, 4)

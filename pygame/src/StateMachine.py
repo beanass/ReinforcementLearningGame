@@ -1,18 +1,14 @@
+from src.states.game import EmptyState
+
 class StateMachine:
     def __init__(self, states):
-        self.empty = {
-            'render': lambda: None,
-            'update': lambda: None,
-            'enter': lambda: None,
-            'exit': lambda: None
-        }
         self.states = states or {}
-        self.current = self.empty
+        self.current = EmptyState.EmptyState()
         self.name = ""
 
     def change(self, stateName, enterParams):
         assert self.states[stateName]
-        self.current['exit']()
+        self.current.exit()
         self.current = self.states[stateName]()
         self.current.enter(enterParams)
         self.name = stateName

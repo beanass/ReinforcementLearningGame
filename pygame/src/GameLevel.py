@@ -22,11 +22,11 @@ class GameLevel:
         for entity in self.entities:
             entity.update(dt)
 
-    def render(self):
-        self.tilemap.render()
+    def render(self, surf, screen):
+        self.tilemap.render(surf, screen)
 
         for object in self.objects:
-            object.render()
+            object.render(surf, screen)
 
         for entity in self.entities:
-            entity.render()
+            entity.render(surf, screen)

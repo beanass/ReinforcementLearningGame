@@ -25,28 +25,28 @@ class LevelMaker:
         for x in range(width):
             tileID = constants.TILE_ID_EMPTY
 
-            for y in range(6):
+            for y in range(7):
                 tiles[y].append(Tile.Tile(x, y, tileID, None, tileset, topperset))
 
             if random.randint(1, 7) == 1 and x != keyX and x != lockX:
-                for y in range(6, height):
+                for y in range(7, height):
                     tiles[y].append(Tile.Tile(x, y, tileID, None, tileset, topperset))
             else:
                 tileID = constants.TILE_ID_GROUND
 
-                blockHeight = 4
-                highestBlock = 7
+                blockHeight = 3
+                highestBlock = 6
 
-                for y in range(6, height):
+                for y in range(7, height):
                     tiles[y].append(Tile.Tile(x, y, tileID, y == 7 and topper or None, tileset, topperset))
 
                 if random.randint(1, 8) == 1:
-                    blockHeight = 2
-                    highestBlock = 5
+                    blockHeight = 3
+                    highestBlock = 6
 
-                    tiles[4][x] = Tile.Tile(x, 4, tileID, topper, tileset, topperset)
-                    tiles[5][x] = Tile.Tile(x, 5, tileID, None, tileset, topperset)
-                    tiles[6][x].topper = None
+                    tiles[5][x] = Tile.Tile(x, 5, tileID, topper, tileset, topperset)
+                    tiles[6][x] = Tile.Tile(x, 6, tileID, None, tileset, topperset)
+                    tiles[7][x].topper = None
 
                 if x == keyX:
                     # insert key

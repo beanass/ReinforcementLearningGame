@@ -1,4 +1,5 @@
-from src import constants
+from src import constants, Dependencies
+import pygame
 
 class Tile:
     def __init__(self, x, y, id, topper, tileset, topperset):
@@ -13,12 +14,18 @@ class Tile:
         self.topper = topper
         self.topperset = topperset
 
-    def collidable(self, target):
-        for v in constants.COLLIDABLE_TILES.items():
+    def collidable(self):
+        for v in constants.COLLIDABLE_TILES:
             if self.id == v:
                 return True
 
         return False
 
-    def render(self):
-        pass
+    def render(self, surf, screen):
+        if self.id == 0:
+            return
+
+        surf.blit(Dependencies.gFrames['tiles'][self.id], ((self.x - 1) * 16, (self.y - 1) * 16))
+
+        if self.topper:
+            surf.blit(Dependencies.gFrames['toppers'][self.id], ((self.x - 1) * 16, (self.y - 1) * 16))

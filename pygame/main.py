@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 from src import constants, Dependencies, StateMachine
-from src.states.game import StartState
+from src.states.game import StartState, PlayState
 
 class SuperBros:
     def __init__(self):
@@ -14,8 +14,8 @@ class SuperBros:
         Dependencies.loadAssets()
 
         self._state_machine = StateMachine.StateMachine({
-            'start': lambda: StartState.StartState()
-            #'play': lambda: StateMachine.PlayState(),
+            'start': lambda: StartState.StartState(),
+            'play': lambda: PlayState.PlayState()
         })
         self._state_machine.change('start', {})
 
@@ -23,14 +23,23 @@ class SuperBros:
         self._display_surf = pygame.Surface((constants.VIRTUAL_WIDTH, constants.VIRTUAL_HEIGHT))
         pygame.display.set_caption('Super 50 Bros.')
         pygame.font.init()
+
+        self.clock = pygame.time.Clock()
+
         self._running = True
 
     def on_event(self, event):
         if event.type == pygame.QUIT:
             self._running = False
+        if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN and self._state_machine.name == 'start':
+                    self._state_machine.change('play', {
+                        'levelWidth': 100,
+                        'score': 0
+                    })
 
     def on_loop(self):
-        pass
+        self._state_machine.update(self.clock.tick(60) / 1000)
 
     def on_render(self):
         self._state_machine.render(self._display_surf, self._display_screen)
