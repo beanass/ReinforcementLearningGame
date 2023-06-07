@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
-from src import constants, Dependencies
+from src import constants, Dependencies, StateMachine
+from src.states.game import StartState
 
 class SuperBros:
     def __init__(self):
@@ -10,6 +11,14 @@ class SuperBros:
 
     def on_init(self):
         pygame.init()
+        Dependencies.loadAssets()
+
+        self._state_machine = StateMachine.StateMachine({
+            'start': lambda: StartState.StartState()
+            #'play': lambda: StateMachine.PlayState(),
+        })
+        self._state_machine.change('start', {})
+
         self._display_screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._display_surf = pygame.Surface((constants.VIRTUAL_WIDTH, constants.VIRTUAL_HEIGHT))
         pygame.display.set_caption('Super 50 Bros.')
@@ -24,16 +33,7 @@ class SuperBros:
         pass
 
     def on_render(self):
-        self._display_surf.blit(Dependencies.gFrames["backgrounds"][0], (0, 0))
-        text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (0, 0, 0))
-        self._display_surf.blit(text_surface, (constants.VIRTUAL_WIDTH / 2 - text_surface.get_width() / 2, constants.VIRTUAL_HEIGHT / 2 - 40 + 1))
-        text_surface = Dependencies.gFonts["title"].render('Super 50 Bros.', True, (255, 255, 255))
-        self._display_surf.blit(text_surface, (constants.VIRTUAL_WIDTH / 2 - text_surface.get_width() / 2, constants.VIRTUAL_HEIGHT / 2 - 40))
-        
-        self._display_screen.blit(pygame.transform.scale(self._display_surf, self.size), (0, 0))
-
-        pygame.display.update()
-        pass
+        self._state_machine.render(self._display_surf, self._display_screen)
 
     def on_cleanup(self):
         pygame.quit()
