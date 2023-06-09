@@ -40,6 +40,8 @@ class SuperBros:
 
     def on_loop(self):
         self._state_machine.update(self.clock.tick(60) / 1000)
+        if self._state_machine.current.player and self._state_machine.current.player.dead:
+            self._state_machine.change('start', {})
 
     def on_render(self):
         self._state_machine.render(self._display_surf, self._display_screen)

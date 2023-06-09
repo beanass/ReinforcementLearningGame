@@ -15,14 +15,13 @@ class Tile:
         self.topperset = topperset
 
     def collidable(self):
-        for v in constants.COLLIDABLE_TILES:
-            if self.id == v:
+        if self.id == 2:
                 return True
 
         return False
 
     def render(self, surf, screen):
-        if self.id == 0:
+        if self.id == 4:
             return
 
         surf.blit(Dependencies.gFrames['tiles'][self.id], ((self.x - 1) * 16, (self.y - 1) * 16))

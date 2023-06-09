@@ -8,8 +8,10 @@ class Player(Entity.Entity):
         self.key = 0
         self.consumingKey = False
         self.dead = False
+        self.walking = False
 
     def update(self, dt):
+        print(self.stateMachine.name)
         super().update(dt)
 
     def render(self, surf, screen):

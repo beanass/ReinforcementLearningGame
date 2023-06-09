@@ -57,6 +57,7 @@ class PlayState(BaseState.BaseState):
 
     def render(self, surf, screen):
         surf.blit(Dependencies.gFrames["backgrounds"][self.background], (0, 0))
+        surf.blit(Dependencies.gFrames["backgrounds"][self.background], (0, Dependencies.gFrames["backgrounds"][self.background].get_height() / 3 * 2))
 
         self.level.render(surf, screen)
         self.player.render(surf, screen)

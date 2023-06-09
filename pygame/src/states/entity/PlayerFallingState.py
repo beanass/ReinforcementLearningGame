@@ -20,6 +20,8 @@ class PlayerFallingState(BaseState.BaseState):
 
     def update(self, dt):
         # animation
+        events = pygame.event.get()
+
         self.player.dy = self.player.dy + self.gravity
         self.player.y = self.player.y + self.player.dy * dt
 
@@ -30,22 +32,33 @@ class PlayerFallingState(BaseState.BaseState):
             self.player.dy = 0
 
             stateChanged = False
-            events = pygame.event.get()
             for event in events:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        self.player.changeState('walking', {})
-                        stateChanged = True
+                        self.player.walking = True
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                        self.player.walking = False
+
+            if self.player.walking:
+                self.player.changeState('walking', {})
+                stateChanged = True
 
             if not stateChanged:
                 self.player.changeState('idle', {})
+
+            print(self.player.y, (tileBottomLeft.y - 1) * 16)
+
+            self.player.y = (tileBottomLeft.y - 1) * 16 - self.player.height
+
+            print(self.player.y, (tileBottomLeft.y - 1) * 16)
 
         elif self.player.y > constants.VIRTUAL_HEIGHT:
             self.player.dead = True
             # sound
 
         else:
-            events = pygame.event.get()
+            
             for event in events:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
@@ -64,7 +77,6 @@ class PlayerFallingState(BaseState.BaseState):
                     selft.player.y = object.y - self.player.height
 
                     stateChanged = False
-                    events = pygame.event.get()
                     for event in events:
                         if event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:

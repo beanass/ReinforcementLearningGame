@@ -20,16 +20,13 @@ class PlayerWalkingState(BaseState.BaseState):
     def update(self, dt):
         # animation
 
-        pressingKey = False
         events = pygame.event.get()
         for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    pressingKey = True
-                elif event.key == pygame.K_RIGHT:
-                    pressingKey = True
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    self.player.walking = False
 
-        if not pressingKey:
+        if not self.player.walking:
             self.player.changeState('idle', {})
         else:
             tileBottomLeft = self.player.map.pointToTile(self.player.x + 1, self.player.y + self.player.height)

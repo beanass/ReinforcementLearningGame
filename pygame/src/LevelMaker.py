@@ -38,7 +38,7 @@ class LevelMaker:
                 highestBlock = 6
 
                 for y in range(7, height):
-                    tiles[y].append(Tile.Tile(x, y, tileID, y == 7 and topper or None, tileset, topperset))
+                    tiles[y].append(Tile.Tile(x, y, tileID, y == 7 and None or None, tileset, topperset))
 
                 if random.randint(1, 8) == 1:
                     blockHeight = 3
@@ -62,6 +62,24 @@ class LevelMaker:
 
         map = TileMap.TileMap(width, height)
         map.tiles = tiles
+
+        tileMatrix = []
+        for y in range(height):
+            tileRow = []
+            for x in range(16):
+                tile = tiles[y][x]
+                if tile.id == constants.TILE_ID_EMPTY:
+                    tileRow.append(0)
+                else:
+                    tileRow.append(1)
+
+            tileMatrix.append(tileRow)
+
+        for y in range(height):
+            for x in range(16):
+                print(tileMatrix[y][x], end='')
+            print()
+
 
         return GameLevel.GameLevel(entities, objects, map)
 
