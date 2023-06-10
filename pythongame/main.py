@@ -297,8 +297,8 @@ class SuperBros:
         return False, None
 
     def checkRightCollisions(self):
-        tileTopRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + 1)
-        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + self.player.height - 1)
+        tileTopRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + 2)
+        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + self.player.height - 2)
 
         tiles = []
         if tileTopRight:
@@ -313,8 +313,8 @@ class SuperBros:
         return False, None
     
     def checkLeftCollisions(self):
-        tileTopLeft = self.pointToTile(self.player.x - 1, self.player.y + 1)
-        tileBottomLeft = self.pointToTile(self.player.x - 1, self.player.y + self.player.height - 1)
+        tileTopLeft = self.pointToTile(self.player.x - 1, self.player.y + 2)
+        tileBottomLeft = self.pointToTile(self.player.x - 1, self.player.y + self.player.height - 2)
 
         tiles = []
         if tileTopLeft:
