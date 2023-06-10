@@ -1,4 +1,5 @@
 from src import Dependencies
+import pygame
 
 class Entity:
     def __init__(self, x, y, width, height, texture, stateMachine, map, level):
@@ -10,6 +11,8 @@ class Entity:
 
         self.width = width
         self.height = height
+
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         self.texture = texture
         self.stateMachine = stateMachine

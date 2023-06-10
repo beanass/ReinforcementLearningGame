@@ -25,33 +25,10 @@ class PlayerFallingState(BaseState.BaseState):
         self.player.dy = self.player.dy + self.gravity
         self.player.y = self.player.y + self.player.dy * dt
 
-        tileBottomLeft = self.player.map.pointToTile(self.player.x + 1, self.player.y + self.player.height)
-        tileBottomRight = self.player.map.pointToTile(self.player.x + self.player.width - 1, self.player.y + self.player.height)
-
-        if (tileBottomLeft and tileBottomRight) and (tileBottomLeft.collidable() or tileBottomRight.collidable()):
+        if self.player.checkBottomCollisions(dt):
+            print('bottom collision')
             self.player.dy = 0
-
-            stateChanged = False
-            for event in events:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        self.player.walking = True
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        self.player.walking = False
-
-            if self.player.walking:
-                self.player.changeState('walking', {})
-                stateChanged = True
-
-            if not stateChanged:
-                self.player.changeState('idle', {})
-
-            print(self.player.y, (tileBottomLeft.y - 1) * 16)
-
-            self.player.y = (tileBottomLeft.y - 1) * 16 - self.player.height
-
-            print(self.player.y, (tileBottomLeft.y - 1) * 16)
+            self.player.changeState('idle', {})
 
         elif self.player.y > constants.VIRTUAL_HEIGHT:
             self.player.dead = True

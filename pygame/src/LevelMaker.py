@@ -26,11 +26,11 @@ class LevelMaker:
             tileID = constants.TILE_ID_EMPTY
 
             for y in range(7):
-                tiles[y].append(Tile.Tile(x, y, tileID, None, tileset, topperset))
+                tiles[y].append(Tile.Tile(x*16, y*16, tileID, None, tileset, topperset))
 
             if random.randint(1, 7) == 1 and x != keyX and x != lockX:
                 for y in range(7, height):
-                    tiles[y].append(Tile.Tile(x, y, tileID, None, tileset, topperset))
+                    tiles[y].append(Tile.Tile(x*16, y*16, tileID, None, tileset, topperset))
             else:
                 tileID = constants.TILE_ID_GROUND
 
@@ -38,14 +38,14 @@ class LevelMaker:
                 highestBlock = 6
 
                 for y in range(7, height):
-                    tiles[y].append(Tile.Tile(x, y, tileID, y == 7 and None or None, tileset, topperset))
+                    tiles[y].append(Tile.Tile(x*16, y*16, tileID, y == 7 and topper or None, tileset, topperset))
 
                 if random.randint(1, 8) == 1:
                     blockHeight = 3
                     highestBlock = 6
 
-                    tiles[5][x] = Tile.Tile(x, 5, tileID, topper, tileset, topperset)
-                    tiles[6][x] = Tile.Tile(x, 6, tileID, None, tileset, topperset)
+                    tiles[5][x] = Tile.Tile(x*16, 5*16, tileID, topper, tileset, topperset)
+                    tiles[6][x] = Tile.Tile(x*16, 6*16, tileID, None, tileset, topperset)
                     tiles[7][x].topper = None
 
                 if x == keyX:
@@ -62,24 +62,6 @@ class LevelMaker:
 
         map = TileMap.TileMap(width, height)
         map.tiles = tiles
-
-        tileMatrix = []
-        for y in range(height):
-            tileRow = []
-            for x in range(16):
-                tile = tiles[y][x]
-                if tile.id == constants.TILE_ID_EMPTY:
-                    tileRow.append(0)
-                else:
-                    tileRow.append(1)
-
-            tileMatrix.append(tileRow)
-
-        for y in range(height):
-            for x in range(16):
-                print(tileMatrix[y][x], end='')
-            print()
-
 
         return GameLevel.GameLevel(entities, objects, map)
 
