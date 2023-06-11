@@ -2,6 +2,14 @@ import pygame
 from pygame.locals import *
 import random
 from math import floor
+import os
+
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(current_file_dir)
+
+sounds_path = os.path.join(base_dir, "pythongame", "sounds")
+graphics_path = os.path.join(base_dir, "pythongame", "graphics")
+fonts_path = os.path.join(base_dir, "pythongame", "fonts")
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -122,8 +130,8 @@ def generateLevel(width, height):
                     objects.append(Gameobject(x*16, (highestBlock-1)*16, LOCKS[lockColor], "keys-and-locks"))
 
                 if random.randint(1, 12) == 1:
-                    # spawn block
-                    b = 1
+                    gemspawn = random.randint(0, 3)
+                    objects.append(Gameobject(x*16, blockHeight*16, random.randint(0, 29), "jump-blocks", gem = True if gemspawn == 0 else False))
 
         return tiles, objects, width, height, lockColor
 
@@ -136,7 +144,7 @@ class Player:
         self.width = 16
         self.height = 20
         self.score = 0
-        self.state = "falling"
+        self.state = "idle"
         self.direction = "right"
         self.key = False
         self.lock = False
@@ -170,12 +178,15 @@ class Tile:
         self.topper = topper
 
 class Gameobject:
-    def __init__(self, x, y, id, texture, key = False):
+    def __init__(self, x, y, id, texture, key = False, gem = False):
         self.x = x
         self.y = y
         self.id = id
         self.texture = texture
         self.key = key
+        self.hit = False
+        self.collided = False
+        self.gem = gem
 
 class SuperBros:
     def __init__(self):
@@ -193,16 +204,16 @@ class SuperBros:
         pygame.init()
 
         self.textures = {
-            "tiles": pygame.image.load("pythongame/graphics/tiles.png"),
-            "toppers": pygame.image.load("pythongame/graphics/tile_tops.png"),
-            "bushes": pygame.image.load("pythongame/graphics/bushes_and_cacti.png"),
-            "jump-blocks": pygame.image.load("pythongame/graphics/jump_blocks.png"),
-            "gems": pygame.image.load("pythongame/graphics/gems.png"),
-            "backgrounds": pygame.image.load("pythongame/graphics/backgrounds.png"),
-            "green-alien": pygame.image.load("pythongame/graphics/green_alien.png"),
-            "creatures": pygame.image.load("pythongame/graphics/creatures.png"),
-            "keys-and-locks": pygame.image.load("pythongame/graphics/keys_and_locks.png"),
-            "flags": pygame.image.load("pythongame/graphics/flags.png")
+            "tiles": pygame.image.load(os.path.join(graphics_path, "tiles.png")),
+            "toppers": pygame.image.load(os.path.join(graphics_path, "tile_tops.png")),
+            "bushes": pygame.image.load(os.path.join(graphics_path, "bushes_and_cacti.png")),
+            "jump-blocks": pygame.image.load(os.path.join(graphics_path, "jump_blocks.png")),
+            "gems": pygame.image.load(os.path.join(graphics_path, "gems.png")),
+            "backgrounds": pygame.image.load(os.path.join(graphics_path, "backgrounds.png")),
+            "green-alien": pygame.image.load(os.path.join(graphics_path, "green_alien.png")),
+            "creatures": pygame.image.load(os.path.join(graphics_path, "creatures.png")),
+            "keys-and-locks": pygame.image.load(os.path.join(graphics_path, "keys_and_locks.png")),
+            "flags": pygame.image.load(os.path.join(graphics_path, "flags.png"))
         }
 
         self.frames = {
@@ -219,23 +230,23 @@ class SuperBros:
         }
 
         self.fonts = {
-            "small": pygame.font.Font("pythongame/fonts/font.ttf", 8),
-            "medium": pygame.font.Font("pythongame/fonts/font.ttf", 16),
-            "large": pygame.font.Font("pythongame/fonts/font.ttf", 32),
-            "title": pygame.font.Font("pythongame/fonts/ArcadeAlternate.ttf", 32)
+            "small": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 8),
+            "medium": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 16),
+            "large": pygame.font.Font(os.path.join(fonts_path, "font.ttf"), 32),
+            "title": pygame.font.Font(os.path.join(fonts_path, "ArcadeAlternate.ttf"), 32)
         }
 
         self.sounds = {
-            "jump": pygame.mixer.Sound("pythongame/sounds/jump.wav"),
-            "death": pygame.mixer.Sound("pythongame/sounds/death.wav"),
-            "powerup-reveal": pygame.mixer.Sound("pythongame/sounds/powerup-reveal.wav"),
-            "pickup": pygame.mixer.Sound("pythongame/sounds/pickup.wav"),
-            "empty-block": pygame.mixer.Sound("pythongame/sounds/empty-block.wav"),
-            "kill": pygame.mixer.Sound("pythongame/sounds/kill.wav"),
-            "kill2": pygame.mixer.Sound("pythongame/sounds/kill2.wav")
+            "jump": pygame.mixer.Sound(os.path.join(sounds_path, "jump.wav")),
+            "death": pygame.mixer.Sound(os.path.join(sounds_path, "death.wav")),
+            "powerup-reveal": pygame.mixer.Sound(os.path.join(sounds_path, "powerup-reveal.wav")),
+            "pickup": pygame.mixer.Sound(os.path.join(sounds_path, "pickup.wav")),
+            "empty-block": pygame.mixer.Sound(os.path.join(sounds_path, "empty-block.wav")),
+            "kill": pygame.mixer.Sound(os.path.join(sounds_path, "kill.wav")),
+            "kill2": pygame.mixer.Sound(os.path.join(sounds_path, "kill2.wav"))
         }
 
-        pygame.mixer.music.load("pythongame/sounds/music.wav")
+        pygame.mixer.music.load(os.path.join(sounds_path, "music.wav"))
         pygame.mixer.music.set_volume(0.05)
         pygame.mixer.music.play(-1)
 
@@ -257,7 +268,7 @@ class SuperBros:
             if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER) and self.state == "start":
                 self.state = "play"
                 self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
-                #self.player = Player(16, 16)
+                self.spawnPlayer()
             if event.key == pygame.K_UP and self.state == "play" and self.player.state != "jumping" and self.player.state != "falling":
                 self.player.dy = PLAYER_JUMP_VELOCITY
                 self.player.state = "jumping"
@@ -280,6 +291,9 @@ class SuperBros:
         if self.state == "play":
             self.player.update(dt)
 
+            self.camX = max(0, min(16 * self.levelwidth - VIRTUAL_WIDTH, self.player.x - (VIRTUAL_WIDTH / 2 - 8)))
+            self.backgroundX = (self.camX / 3) % 256
+
             if self.player.y > VIRTUAL_HEIGHT:
                 self.state = "start"
                 self.background = random.randint(0, 2)
@@ -288,6 +302,14 @@ class SuperBros:
                 return
 
             self.checkObjectCollision()
+
+            t_collision, y = self.checkTopCollision()
+            if self.player.state == "jumping":
+                if t_collision:
+                    self.player.dy = 0
+                    self.player.y = y
+                    self.player.state = "falling"
+                    return
 
             b_collision, y = self.checkBottomCollision()
             if self.player.direction == "right":
@@ -302,18 +324,30 @@ class SuperBros:
                     self.player.x = x
             if self.player.state == "falling":
                 if b_collision:
+                    for object in self.objects:
+                        object.collided = False
                     self.player.dy = 0
                     self.player.y = y
                     if self.player.dx == 0:
                         self.player.state = "idle"
                     else:
                         self.player.state = "walking"
-            else:
+            elif not self.player.state == "jumping":
                 if not b_collision:
                     self.player.state = "falling"
 
-            self.camX = max(0, min(16 * self.levelwidth - VIRTUAL_WIDTH, self.player.x - (VIRTUAL_WIDTH / 2 - 8)))
-            self.backgroundX = (self.camX / 3) % 256
+    def spawnPlayer(self):
+        x = y = 0
+        for i in range(0, self.levelwidth):
+            for j in range(0, self.levelheight):
+                if self.level[j][i].id == TILE_ID_GROUND:
+                    x = i * 16
+                    y = j * 16 - 20
+                    break
+            if x != 0 and y != 0:
+                break
+
+        self.player = Player(x, y)
 
     def spawnFlagpole(self):
         poleColor = random.randint(0, 5)
@@ -372,9 +406,39 @@ class SuperBros:
                 if p_rect.colliderect(o_rect):
                     self.background = random.randint(0, 2)
                     self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(floor(self.levelwidth*1.25), 10)
-                    self.player = Player(16, 16)
+                    score = self.player.score
+                    self.spawnPlayer()
+                    self.player.score = score
                     self.camX = 0
-                    return
+            elif object.texture == "gems":
+                if p_rect.colliderect(o_rect):
+                    self.sounds["pickup"].set_volume(0.25)
+                    self.sounds["pickup"].play()
+                    self.objects.remove(object)
+                    self.player.score += 100
+
+    def checkTopCollision(self):
+        if self.player.y <= -10:
+            return True, -10
+
+        for object in self.objects:
+            if object.texture == "jump-blocks":
+                if self.player.x + self.player.width > object.x + 1 and self.player.x < object.x + 15:
+                    if self.player.y - 1 <= object.y + 16 and self.player.y - 1 >= object.y + 11:
+                        if not object.collided:
+                            object.collided = True
+                            self.sounds["empty-block"].set_volume(0.25)
+                            self.sounds["empty-block"].play()
+                            if not object.hit:
+                                object.hit = True
+                                if object.gem:
+                                    self.sounds["powerup-reveal"].set_volume(0.25)
+                                    self.sounds["powerup-reveal"].play()
+                                    self.objects.append(Gameobject(object.x, object.y - 16 + 2, random.randint(0, 7), "gems"))
+                                
+                        return True, object.y + 16
+
+        return False, None
 
     def checkBottomCollision(self):
         tileBottomLeft = self.pointToTile(self.player.x + 1, self.player.y + self.player.height + 1)
@@ -390,6 +454,12 @@ class SuperBros:
             if tile.id == TILE_ID_GROUND:
                 return True, tile.y - self.player.height
 
+        for object in self.objects:
+            if object.texture == "jump-blocks":
+                if self.player.x + self.player.width > object.x + 1 and self.player.x < object.x + 15:
+                    if self.player.y + self.player.height >= object.y and self.player.y + self.player.height <= object.y + 5:
+                        return True, object.y - self.player.height
+
         return False, None
 
     def checkRightCollisions(self):
@@ -401,6 +471,12 @@ class SuperBros:
             tiles.append(tileTopRight)
         if tileBottomRight:
             tiles.append(tileBottomRight)
+
+        for object in self.objects:
+            if object.texture == "jump-blocks":
+                if self.player.x + self.player.width + 2 >= object.x and self.player.x + self.player.width + 2 <= object.x + 5:
+                    if self.player.y + self.player.height - 3 > object.y and self.player.y + 3 < object.y + 8:
+                        return True, object.x - self.player.width
 
         if len(tiles) == 0:
             return True, self.levelwidth * 16 - self.player.width
@@ -420,6 +496,12 @@ class SuperBros:
             tiles.append(tileTopLeft)
         if tileBottomLeft:
             tiles.append(tileBottomLeft)
+
+        for object in self.objects:
+            if object.texture == "jump-blocks":
+                if self.player.x - 2 <= object.x + 16 and self.player.x - 2 >= object.x + 11:
+                    if self.player.y + self.player.height - 3 > object.y and self.player.y + 3 < object.y + 8:
+                        return True, object.x + 16
 
         if len(tiles) == 0:
             return True, 0
