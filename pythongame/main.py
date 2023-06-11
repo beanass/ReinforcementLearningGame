@@ -19,6 +19,14 @@ TILE_ID_GROUND = 2
 
 GRAVITY = 8
 
+KEYS = [
+    0, 1, 2, 3
+]
+
+LOCKS = [
+    4, 5, 6, 7
+]
+
 pygame.init()
 
 def generateSubsurfaces(spritesheet, width, height):
@@ -58,7 +66,7 @@ def generateLevel(width, height):
         objects = []
         keyX = random.randint(2, width//2)
         lockX = random.randint(width//2 + 2, width - 10)
-        lockColor = random.randint(1, 4)
+        lockColor = random.randint(0, 3)
 
         tileID = TILE_ID_GROUND
 
@@ -81,33 +89,43 @@ def generateLevel(width, height):
             else:
                 tileID = TILE_ID_GROUND
 
-                blockHeight = 3
-                highestBlock = 6
+                blockHeight = 4
+                highestBlock = 7
 
                 for y in range(7, height):
                     tiles[y].append(Tile(x*16, y*16, tileID, y == 7 and topper or False))
 
                 if random.randint(1, 8) == 1:
-                    blockHeight = 3
-                    highestBlock = 6
+                    blockHeight = 2
+                    highestBlock = 5
+
+                    if random.randint(1, 8) == 1:
+                        id = random.randint(0, 4)
+                        if id > 1:
+                            id += 2
+                        objects.append(Gameobject(x*16, 4*16, id, "bushes"))
 
                     tiles[5][x] = Tile(x*16, 5*16, tileID, topper)
                     tiles[6][x] = Tile(x*16, 6*16, tileID)
                     tiles[7][x].topper = False
 
+                elif random.randint(1, 8) == 1:
+                    id = random.randint(0, 4)
+                    if id > 1:
+                        id += 2
+                    objects.append(Gameobject(x*16, 6*16, id, "bushes"))
+
                 if x == keyX:
-                    # insert key
-                    b = 1
+                    objects.append(Gameobject(x*16, (highestBlock-1)*16, KEYS[lockColor], "keys-and-locks", True))
 
                 if x == lockX:
-                    # insert lock
-                    b = 1
+                    objects.append(Gameobject(x*16, (highestBlock-1)*16, LOCKS[lockColor], "keys-and-locks"))
 
-                if random.randint(1, 10) == 1:
+                if random.randint(1, 12) == 1:
                     # spawn block
                     b = 1
 
-        return tiles, width, height
+        return tiles, objects, width, height, lockColor
 
 class Player:
     def __init__(self, x, y):
@@ -120,6 +138,8 @@ class Player:
         self.score = 0
         self.state = "falling"
         self.direction = "right"
+        self.key = False
+        self.lock = False
 
     def update(self, dt):
         if self.state == "falling":
@@ -149,12 +169,20 @@ class Tile:
         self.id = id
         self.topper = topper
 
+class Gameobject:
+    def __init__(self, x, y, id, texture, key = False):
+        self.x = x
+        self.y = y
+        self.id = id
+        self.texture = texture
+        self.key = key
+
 class SuperBros:
     def __init__(self):
         self._running = True
         self._display_surf = None
         self.state = "start"
-        self.level, self.levelwidth, self.levelheight = generateLevel(100, 10)
+        self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
         self.background = random.randint(0, 2)
         self.size = self.width, self.height = WINDOW_WIDTH, WINDOW_HEIGHT
         self.player = Player(16, 16)
@@ -228,9 +256,9 @@ class SuperBros:
                 self._running = False
             if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER) and self.state == "start":
                 self.state = "play"
-                self.level, self.levelwidth, self.levelheight = generateLevel(100, 10)
+                self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                 #self.player = Player(16, 16)
-            if event.key == pygame.K_UP and self.state == "play":
+            if event.key == pygame.K_UP and self.state == "play" and self.player.state != "jumping" and self.player.state != "falling":
                 self.player.dy = PLAYER_JUMP_VELOCITY
                 self.player.state = "jumping"
                 self.sounds["jump"].set_volume(0.25)
@@ -255,9 +283,11 @@ class SuperBros:
             if self.player.y > VIRTUAL_HEIGHT:
                 self.state = "start"
                 self.background = random.randint(0, 2)
-                self.level, self.levelwidth, self.levelheight = generateLevel(100, 10)
+                self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                 self.player = Player(16, 16)
                 return
+
+            self.checkObjectCollision()
 
             b_collision, y = self.checkBottomCollision()
             if self.player.direction == "right":
@@ -285,11 +315,66 @@ class SuperBros:
             self.camX = max(0, min(16 * self.levelwidth - VIRTUAL_WIDTH, self.player.x - (VIRTUAL_WIDTH / 2 - 8)))
             self.backgroundX = (self.camX / 3) % 256
 
+    def spawnFlagpole(self):
+        poleColor = random.randint(0, 5)
+        x = y = 0
+        for i in range(self.levelwidth-1, 1, -1):
+            for j in range(0, self.levelheight):
+                if self.level[j][i-1].id == TILE_ID_GROUND:
+                    x = (i-1) * 16
+                    y = (j-1) * 16
+                    break
+            if x != 0 and y != 0:
+                break
+
+        poleBottom = Gameobject(x, y, poleColor+18, "flags")
+        self.objects.append(poleBottom)
+        poleHeight = random.randint(1, 3)+1
+        for i in range(1, poleHeight):
+            pole = Gameobject(x, y - i*16, poleColor+9, "flags")
+            self.objects.append(pole)
+
+        poleTop = Gameobject(x, y - poleHeight*16, poleColor, "flags")
+        self.objects.append(poleTop)
+
+        flagCount = random.randint(2, 3)
+        for i in range(flagCount):
+            flagColor = (random.randint(0, 3))*9+6
+            flag = Gameobject(x + 8, y - (poleHeight+i-2)*16, flagColor, "flags")
+            self.objects.append(flag)     
+
     def pointToTile(self, x, y):
         if x < 0 or x > self.levelwidth*16 or y < 0 or y > self.levelheight*16:
             return None
         
         return self.level[int(y // 16)][int(x // 16)]
+
+    def checkObjectCollision(self):
+        p_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
+        for object in self.objects:
+            o_rect = pygame.Rect(object.x, object.y, 16, 8)
+            if object.texture == "keys-and-locks":
+                if p_rect.colliderect(o_rect):
+                    if object.key == True:
+                        self.sounds["pickup"].set_volume(0.25)
+                        self.sounds["pickup"].play()
+                        self.objects.remove(object)
+                        self.player.key = True
+                    else:
+                        if self.player.key == True:
+                            self.sounds["pickup"].set_volume(0.25)
+                            self.sounds["pickup"].play()
+                            self.objects.remove(object)
+                            self.player.key = False
+                            self.player.lock = True
+                            self.spawnFlagpole()
+            elif object.texture == "flags":
+                if p_rect.colliderect(o_rect):
+                    self.background = random.randint(0, 2)
+                    self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(floor(self.levelwidth*1.25), 10)
+                    self.player = Player(16, 16)
+                    self.camX = 0
+                    return
 
     def checkBottomCollision(self):
         tileBottomLeft = self.pointToTile(self.player.x + 1, self.player.y + self.player.height + 1)
@@ -354,6 +439,9 @@ class SuperBros:
                     if tile.topper:
                         self._surf.blit(self.frames["toppers"][tile.id], (tile.x - self.camX, tile.y))
 
+        for object in self.objects:
+            self._surf.blit(self.frames[object.texture][object.id], (object.x - self.camX, object.y))
+
     def on_render(self):
         if self.state == "start":
             self._surf.blit(self.frames["backgrounds"][self.background], (0, self.frames["backgrounds"][self.background].get_height() / 3))
@@ -388,6 +476,15 @@ class SuperBros:
             self._surf.blit(text_surface, (5, 5))
             text_surface = self.fonts["medium"].render(str(self.player.score), True, (255, 255, 255))
             self._surf.blit(text_surface, (4, 4))
+
+            if self.player.key:
+                key_surface = self.frames["keys-and-locks"][KEYS[self.lockColor]]
+                key_surface = pygame.transform.scale(key_surface, (8, 8))
+                self._surf.blit(key_surface, (VIRTUAL_WIDTH - 16, 5))
+            if self.player.lock:
+                lock_surface = self.frames["keys-and-locks"][LOCKS[self.lockColor]]
+                lock_surface = pygame.transform.scale(lock_surface, (8, 8))
+                self._surf.blit(lock_surface, (VIRTUAL_WIDTH - 16, 5))
 
             self._screen.blit(pygame.transform.scale(self._surf, (WINDOW_WIDTH, WINDOW_HEIGHT)), (0, 0))
 
