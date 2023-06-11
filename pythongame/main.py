@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import random
+from math import floor
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -124,9 +125,6 @@ class Player:
         if self.state == "falling":
             self.dy += GRAVITY
             self.y += self.dy * dt
-            #if self.y >= VIRTUAL_HEIGHT - 52:
-                #self.y = VIRTUAL_HEIGHT - 52
-                #self.state = "idle"
         if self.state == "jumping":
             self.dy += GRAVITY
             self.y += self.dy * dt
@@ -160,6 +158,8 @@ class SuperBros:
         self.background = random.randint(0, 2)
         self.size = self.width, self.height = WINDOW_WIDTH, WINDOW_HEIGHT
         self.player = Player(16, 16)
+        self.camX = 0
+        self.backgroundX = 0
 
     def on_init(self):
         pygame.init()
@@ -251,6 +251,14 @@ class SuperBros:
         dt = self.clock.tick(60) / 1000
         if self.state == "play":
             self.player.update(dt)
+
+            if self.player.y > VIRTUAL_HEIGHT:
+                self.state = "start"
+                self.background = random.randint(0, 2)
+                self.level, self.levelwidth, self.levelheight = generateLevel(100, 10)
+                self.player = Player(16, 16)
+                return
+
             b_collision, y = self.checkBottomCollision()
             if self.player.direction == "right":
                 r_collision, x = self.checkRightCollisions()
@@ -273,6 +281,9 @@ class SuperBros:
             else:
                 if not b_collision:
                     self.player.state = "falling"
+
+            self.camX = max(0, min(16 * self.levelwidth - VIRTUAL_WIDTH, self.player.x - (VIRTUAL_WIDTH / 2 - 8)))
+            self.backgroundX = (self.camX / 3) % 256
 
     def pointToTile(self, x, y):
         if x < 0 or x > self.levelwidth*16 or y < 0 or y > self.levelheight*16:
@@ -297,14 +308,17 @@ class SuperBros:
         return False, None
 
     def checkRightCollisions(self):
-        tileTopRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + 2)
-        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 1, self.player.y + self.player.height - 2)
+        tileTopRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + 3)
+        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + self.player.height - 3)
 
         tiles = []
         if tileTopRight:
             tiles.append(tileTopRight)
         if tileBottomRight:
             tiles.append(tileBottomRight)
+
+        if len(tiles) == 0:
+            return True, self.levelwidth * 16 - self.player.width
 
         for tile in tiles:
             if tile.id == TILE_ID_GROUND:
@@ -313,14 +327,17 @@ class SuperBros:
         return False, None
     
     def checkLeftCollisions(self):
-        tileTopLeft = self.pointToTile(self.player.x - 1, self.player.y + 2)
-        tileBottomLeft = self.pointToTile(self.player.x - 1, self.player.y + self.player.height - 2)
+        tileTopLeft = self.pointToTile(self.player.x - 2, self.player.y + 3)
+        tileBottomLeft = self.pointToTile(self.player.x - 2, self.player.y + self.player.height - 3)
 
         tiles = []
         if tileTopLeft:
             tiles.append(tileTopLeft)
         if tileBottomLeft:
             tiles.append(tileBottomLeft)
+
+        if len(tiles) == 0:
+            return True, 0
 
         for tile in tiles:
             if tile.id == TILE_ID_GROUND:
@@ -333,9 +350,9 @@ class SuperBros:
             for x in range(len(self.level[y])):
                 tile = self.level[y][x]
                 if tile.id != TILE_ID_EMPTY:
-                    self._surf.blit(self.frames["tiles"][tile.id], (tile.x, tile.y))
+                    self._surf.blit(self.frames["tiles"][tile.id], (tile.x - self.camX, tile.y))
                     if tile.topper:
-                        self._surf.blit(self.frames["toppers"][tile.id], (tile.x, tile.y))
+                        self._surf.blit(self.frames["toppers"][tile.id], (tile.x - self.camX, tile.y))
 
     def on_render(self):
         if self.state == "start":
@@ -357,12 +374,15 @@ class SuperBros:
 
             pygame.display.update()
         if self.state == "play":
-            self._surf.blit(self.frames["backgrounds"][self.background], (0, self.frames["backgrounds"][self.background].get_height() / 3))
-            self._surf.blit(self.frames["backgrounds"][self.background], (0, 0))
+            self._surf.blit(self.frames["backgrounds"][self.background], (-self.backgroundX, self.frames["backgrounds"][self.background].get_height() / 3))
+            self._surf.blit(self.frames["backgrounds"][self.background], (-self.backgroundX, 0))
+
+            self._surf.blit(self.frames["backgrounds"][self.background], (-self.backgroundX + 256, self.frames["backgrounds"][self.background].get_height() / 3))
+            self._surf.blit(self.frames["backgrounds"][self.background], (-self.backgroundX + 256, 0))
 
             self.render_level()
 
-            self._surf.blit(self.frames["green-alien"][0], (self.player.x, self.player.y))
+            self._surf.blit(self.frames["green-alien"][0], (self.player.x - self.camX, self.player.y))
 
             text_surface = self.fonts["medium"].render(str(self.player.score), True, (0, 0, 0))
             self._surf.blit(text_surface, (5, 5))
