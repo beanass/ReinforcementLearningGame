@@ -9,11 +9,11 @@ from torch.autograd import Variable
 
 def build_model(input_shape, num_actions):
     model = nn.Sequential(
-        nn.Linear(input_shape, 24),
+        nn.Linear(input_shape, 12),
         nn.ReLU(),
-        nn.Linear(24, 24),
+        nn.Linear(12, 6),
         nn.ReLU(),
-        nn.Linear(24, num_actions)
+        nn.Linear(6, num_actions)
     )
     return model
 

@@ -17,10 +17,9 @@ def main():
     agent = DQNAgent (space_shape[0]*space_shape[1]*space_shape[2], env.action_space.n)
     agent.load_model('model.pth')
     
-    batch_size = 4
+    batch_size = 2
 
     while not done:
-        # action = env.action_space.sample()
         action = agent.choose_action(state)
         observation, reward, done, info = env.step(action)
         agent.remember(state, action, reward, observation, done)
@@ -28,8 +27,11 @@ def main():
 
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
+
+        env.render()
+
     agent.update_target_network()
-        #env.render()
+
     agent.save_model('model.pth')
     env.close()
 
