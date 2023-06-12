@@ -29,6 +29,9 @@ def process_state(state):
 
 class DQNAgent:
     def __init__(self, state_shape, action_space):
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        print(self.device)
+
         self.state_shape = state_shape
         self.action_space = action_space
 
@@ -54,6 +57,7 @@ class DQNAgent:
             nn.ReLU(),
             nn.Linear(64, self.action_space)
         )
+        model.to(self.device)
         return model
 
     def update_target_network(self):
@@ -65,7 +69,8 @@ class DQNAgent:
         else:
             with torch.no_grad():
                 state = state.flatten()
-                q_values = self.q_network(torch.FloatTensor(state))
+                state_tensor = torch.FloatTensor(state).to(self.device)
+                q_values = self.q_network(state_tensor)
                 action = torch.argmax(q_values).item()
         return action
 
@@ -85,19 +90,21 @@ class DQNAgent:
             state = state.flatten()
             states.append(state)
 
-            q_values = self.q_network(torch.FloatTensor(state)).detach().numpy()
+            state_tensor = torch.FloatTensor(state).to(self.device)
+            q_values = self.q_network(state_tensor).detach().cpu().numpy()
             if done:
                 q_values[action] = reward
             else:
                 next_state = next_state.flatten()
-                next_q_values = self.target_network(torch.FloatTensor(next_state)).detach().numpy()
+                next_state_tensor = torch.FloatTensor(next_state).to(self.device)
+                next_q_values = self.target_network(next_state_tensor).detach().cpu().numpy()
                 q_values[action] = reward + self.gamma * np.max(next_q_values)
             targets.append(q_values)
 
         states = np.array(states)
-        states = torch.FloatTensor(states)
+        states = torch.FloatTensor(states).to(self.device)
         targets = np.array(targets)
-        targets = torch.FloatTensor(targets)
+        targets = torch.FloatTensor(targets).to(self.device)
 
         self.optimizer.zero_grad()
         outputs = self.q_network(states)
