@@ -7,26 +7,6 @@ import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Variable
 
-def build_model(input_shape, num_actions):
-    model = nn.Sequential(
-        nn.Linear(input_shape, 12),
-        nn.ReLU(),
-        nn.Linear(12, 6),
-        nn.ReLU(),
-        nn.Linear(6, num_actions)
-    )
-    return model
-
-def process_state(state):
-    if isinstance(state, dict):
-        state_values = [process_state(value) for value in state.values()]
-        return state_values
-    elif isinstance(state, list):
-        state_values = [process_state(value) for value in state]
-        return state_values
-    else:
-        return state
-
 class DQNAgent:
     def __init__(self, state_shape, action_space):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -36,7 +16,7 @@ class DQNAgent:
         self.action_space = action_space
 
         self.gamma = 0.6  # Discount factor
-        self.epsilon = 1.0  # Exploration factor
+        self.epsilon = 0.8  # Exploration factor
         self.epsilon_decay = 0.99  # Decay rate for exploration factor
         self.epsilon_min = 0.01  # Minimum exploration factor
         self.memory = []  # Replay memory
@@ -53,9 +33,9 @@ class DQNAgent:
         model = nn.Sequential(
             nn.Linear(self.state_shape, 64),
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(64, self.action_space)
+            nn.Linear(32, self.action_space)
         )
         model.to(self.device)
         return model

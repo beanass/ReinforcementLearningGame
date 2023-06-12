@@ -18,14 +18,14 @@ VIRTUAL_WIDTH = 256
 VIRTUAL_HEIGHT = 144
 
 PLAYER_WALK_SPEED = 60 #100
-PLAYER_JUMP_VELOCITY = -225
+PLAYER_JUMP_VELOCITY = -190
 
 SNAIL_MOVE_SPEED = 10
 
 TILE_ID_EMPTY = 4
 TILE_ID_GROUND = 2
 
-GRAVITY = 8
+GRAVITY = 12
 
 KEYS = [
     0, 1, 2, 3
@@ -151,6 +151,7 @@ class Player:
         self.direction = "right"
         self.key = False
         self.lock = False
+        self.dead = False
 
     def update(self, dt):
         if self.state == "falling":
@@ -306,7 +307,7 @@ class SuperBros:
                 self.player.dx = 0
 
     def on_loop(self):
-        dt = self.clock.tick(60) / 1000
+        dt = self.clock.tick(30) / 1000
         if self.state == "play":
             self.player.update(dt)
 
@@ -325,6 +326,7 @@ class SuperBros:
                 self.background = random.randint(0, 2)
                 self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                 self.player = Player(16, 16)
+                self.player.dead = True
                 return
 
             self.checkObjectCollision()
@@ -444,6 +446,7 @@ class SuperBros:
                     self.background = random.randint(0, 2)
                     self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                     self.spawnPlayer()
+                    self.player.dead = True
                     return
 
     def checkObjectCollision(self):
@@ -504,8 +507,8 @@ class SuperBros:
         return False, None
 
     def checkBottomCollision(self):
-        tileBottomLeft = self.pointToTile(self.player.x + 1, self.player.y + self.player.height + 1)
-        tileBottomRight = self.pointToTile(self.player.x + self.player.width - 1, self.player.y + self.player.height + 1)
+        tileBottomLeft = self.pointToTile(self.player.x + 1, self.player.y + self.player.height + 2)
+        tileBottomRight = self.pointToTile(self.player.x + self.player.width - 1, self.player.y + self.player.height + 2)
 
         tiles = []
         if tileBottomLeft:
@@ -526,8 +529,8 @@ class SuperBros:
         return False, None
 
     def checkRightCollisions(self):
-        tileTopRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + 3)
-        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + self.player.height - 3)
+        tileTopRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + 2)
+        tileBottomRight = self.pointToTile(self.player.x + self.player.width + 2, self.player.y + self.player.height - 4)
 
         tiles = []
         if tileTopRight:
@@ -551,8 +554,8 @@ class SuperBros:
         return False, None
     
     def checkLeftCollisions(self):
-        tileTopLeft = self.pointToTile(self.player.x - 2, self.player.y + 3)
-        tileBottomLeft = self.pointToTile(self.player.x - 2, self.player.y + self.player.height - 3)
+        tileTopLeft = self.pointToTile(self.player.x - 2, self.player.y + 2)
+        tileBottomLeft = self.pointToTile(self.player.x - 2, self.player.y + self.player.height - 4)
 
         tiles = []
         if tileTopLeft:
