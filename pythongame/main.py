@@ -133,7 +133,10 @@ def generateLevel(width, height):
                     gemspawn = random.randint(0, 3)
                     objects.append(Gameobject(x*16, blockHeight*16, random.randint(0, 29), "jump-blocks", gem = True if gemspawn == 0 else False))
 
-        return tiles, objects, width, height, lockColor
+                if random.randint(1, 20) == 1 and x > 10:
+                    entities.append(Entity(x*16, (highestBlock-1)*16, None))
+
+        return tiles, objects, entities, width, height, lockColor
 
 class Player:
     def __init__(self, x, y):
@@ -161,7 +164,7 @@ class Player:
         self.x += self.dx * dt
 
 class Entity:
-    def __init__(self, x, y):
+    def __init__(self, x, y, player):
         self.x = x
         self.y = y
         self.dx = 0
@@ -169,6 +172,22 @@ class Entity:
         self.width = 16
         self.height = 16
         self.direction = "left"
+        self.state = "idle"
+        self.player = player
+
+    def update(self, dt):
+        if abs(self.player.x - self.x) <= 5*16:
+            self.state = "chasing"
+        if self.state == "chasing":
+            if self.player.x > self.x:
+                self.direction = "right"
+                self.dx = SNAIL_MOVE_SPEED
+            else:
+                self.direction = "left"
+                self.dx = -SNAIL_MOVE_SPEED
+        if self.state == "idle":
+            self.dx = 0
+        self.x += self.dx * dt
 
 class Tile:
     def __init__(self, x, y, id, topper = False):
@@ -193,7 +212,7 @@ class SuperBros:
         self._running = True
         self._display_surf = None
         self.state = "start"
-        self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+        self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
         self.background = random.randint(0, 2)
         self.size = self.width, self.height = WINDOW_WIDTH, WINDOW_HEIGHT
         self.player = Player(16, 16)
@@ -265,9 +284,9 @@ class SuperBros:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 self._running = False
-            if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER) and self.state == "start":
+            if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER or event.key == pygame.K_DOWN) and self.state == "start":
                 self.state = "play"
-                self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                 self.spawnPlayer()
             if event.key == pygame.K_UP and self.state == "play" and self.player.state != "jumping" and self.player.state != "falling":
                 self.player.dy = PLAYER_JUMP_VELOCITY
@@ -291,17 +310,25 @@ class SuperBros:
         if self.state == "play":
             self.player.update(dt)
 
+            for entity in self.entities:
+                if entity.player == None:
+                    entity.player = self.player
+                entity.update(dt)
+
             self.camX = max(0, min(16 * self.levelwidth - VIRTUAL_WIDTH, self.player.x - (VIRTUAL_WIDTH / 2 - 8)))
             self.backgroundX = (self.camX / 3) % 256
 
             if self.player.y > VIRTUAL_HEIGHT:
+                self.sounds["death"].set_volume(0.25)
+                self.sounds["death"].play()
                 self.state = "start"
                 self.background = random.randint(0, 2)
-                self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
                 self.player = Player(16, 16)
                 return
 
             self.checkObjectCollision()
+            self.checkEntityCollision(dt)
 
             t_collision, y = self.checkTopCollision()
             if self.player.state == "jumping":
@@ -383,6 +410,42 @@ class SuperBros:
         
         return self.level[int(y // 16)][int(x // 16)]
 
+    def checkEntityCollision(self, dt):
+        for entity in self.entities:
+            if entity.direction == "right":
+                tileRight = self.pointToTile(entity.x + entity.width, entity.y)
+                tileBottomRight = self.pointToTile(entity.x + entity.width, entity.y + entity.height)
+
+                if (tileRight and tileBottomRight) and (tileRight.id == TILE_ID_GROUND or tileBottomRight.id == TILE_ID_EMPTY):
+                    entity.x -= SNAIL_MOVE_SPEED * dt
+                    entity.direction = "left"
+            elif entity.direction == "left":
+                tileLeft = self.pointToTile(entity.x, entity.y)
+                tileBottomLeft = self.pointToTile(entity.x, entity.y + entity.height)
+
+                if (tileLeft and tileBottomLeft) and (tileLeft.id == TILE_ID_GROUND or tileBottomLeft.id == TILE_ID_EMPTY):
+                    entity.x += SNAIL_MOVE_SPEED * dt
+                    entity.direction = "right"
+
+            e_rect = pygame.Rect(entity.x, entity.y, entity.width, entity.height)
+            p_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
+            if p_rect.colliderect(e_rect):
+                if self.player.state == "falling":
+                    self.sounds["kill"].set_volume(0.25)
+                    self.sounds["kill"].play()
+                    self.sounds["kill2"].set_volume(0.25)
+                    self.sounds["kill2"].play()
+                    self.entities.remove(entity)
+                    self.player.score += 100
+                else:
+                    self.sounds["death"].set_volume(0.25)
+                    self.sounds["death"].play()
+                    self.state = "start"
+                    self.background = random.randint(0, 2)
+                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                    self.spawnPlayer()
+                    return
+
     def checkObjectCollision(self):
         p_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
         for object in self.objects:
@@ -405,7 +468,7 @@ class SuperBros:
             elif object.texture == "flags":
                 if p_rect.colliderect(o_rect):
                     self.background = random.randint(0, 2)
-                    self.level, self.objects, self.levelwidth, self.levelheight, self.lockColor = generateLevel(floor(self.levelwidth*1.25), 10)
+                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(floor(self.levelwidth*1.25), 10)
                     score = self.player.score
                     self.spawnPlayer()
                     self.player.score = score
@@ -523,6 +586,12 @@ class SuperBros:
 
         for object in self.objects:
             self._surf.blit(self.frames[object.texture][object.id], (object.x - self.camX, object.y))
+
+        for entity in self.entities:
+            if entity.direction == "right":
+                self._surf.blit(pygame.transform.flip(self.frames["creatures"][49], True, False), (entity.x - self.camX, entity.y))
+            else:
+                self._surf.blit(self.frames["creatures"][49], (entity.x - self.camX, entity.y))
 
     def on_render(self):
         if self.state == "start":
