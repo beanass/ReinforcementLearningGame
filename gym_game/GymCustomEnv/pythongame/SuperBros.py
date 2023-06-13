@@ -211,7 +211,10 @@ class Gameobject:
 class SuperBros:
     def __init__(self):
         self._running = True
-        self._display_surf = None
+
+    def on_init(self):
+        pygame.init()
+
         self.state = "start"
         self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
         self.background = random.randint(0, 2)
@@ -219,9 +222,6 @@ class SuperBros:
         self.player = Player(16, 16)
         self.camX = 0
         self.backgroundX = 0
-
-    def on_init(self):
-        pygame.init()
 
         self.textures = {
             "tiles": pygame.image.load(os.path.join(graphics_path, "tiles.png")),
@@ -266,9 +266,9 @@ class SuperBros:
             "kill2": pygame.mixer.Sound(os.path.join(sounds_path, "kill2.wav"))
         }
 
-        pygame.mixer.music.load(os.path.join(sounds_path, "music.wav"))
-        pygame.mixer.music.set_volume(0.05)
-        pygame.mixer.music.play(-1)
+        #pygame.mixer.music.load(os.path.join(sounds_path, "music.wav"))
+        #pygame.mixer.music.set_volume(0.05)
+        #pygame.mixer.music.play(-1)
 
         self._screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._surf = pygame.Surface((VIRTUAL_WIDTH, VIRTUAL_HEIGHT))
@@ -292,8 +292,8 @@ class SuperBros:
             if event.key == pygame.K_UP and self.state == "play" and self.player.state != "jumping" and self.player.state != "falling":
                 self.player.dy = PLAYER_JUMP_VELOCITY
                 self.player.state = "jumping"
-                self.sounds["jump"].set_volume(0.25)
-                self.sounds["jump"].play()
+                #self.sounds["jump"].set_volume(0.25)
+                #self.sounds["jump"].play()
             if event.key == pygame.K_RIGHT and self.state == "play":
                 self.player.direction = "right"
                 self.player.dx = PLAYER_WALK_SPEED
@@ -320,8 +320,8 @@ class SuperBros:
             self.backgroundX = (self.camX / 3) % 256
 
             if self.player.y > VIRTUAL_HEIGHT:
-                self.sounds["death"].set_volume(0.25)
-                self.sounds["death"].play()
+                #self.sounds["death"].set_volume(0.25)
+                #self.sounds["death"].play()
                 self.state = "start"
                 self.background = random.randint(0, 2)
                 self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
@@ -433,15 +433,15 @@ class SuperBros:
             p_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
             if p_rect.colliderect(e_rect):
                 if self.player.state == "falling":
-                    self.sounds["kill"].set_volume(0.25)
-                    self.sounds["kill"].play()
-                    self.sounds["kill2"].set_volume(0.25)
-                    self.sounds["kill2"].play()
+                    #self.sounds["kill"].set_volume(0.25)
+                    #self.sounds["kill"].play()
+                    #self.sounds["kill2"].set_volume(0.25)
+                    #self.sounds["kill2"].play()
                     self.entities.remove(entity)
                     self.player.score += 100
                 else:
-                    self.sounds["death"].set_volume(0.25)
-                    self.sounds["death"].play()
+                    #self.sounds["death"].set_volume(0.25)
+                    #self.sounds["death"].play()
                     self.state = "start"
                     self.background = random.randint(0, 2)
                     self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
@@ -456,14 +456,14 @@ class SuperBros:
             if object.texture == "keys-and-locks":
                 if p_rect.colliderect(o_rect):
                     if object.key == True:
-                        self.sounds["pickup"].set_volume(0.25)
-                        self.sounds["pickup"].play()
+                        #self.sounds["pickup"].set_volume(0.25)
+                        #self.sounds["pickup"].play()
                         self.objects.remove(object)
                         self.player.key = True
                     else:
                         if self.player.key == True:
-                            self.sounds["pickup"].set_volume(0.25)
-                            self.sounds["pickup"].play()
+                            #self.sounds["pickup"].set_volume(0.25)
+                            #self.sounds["pickup"].play()
                             self.objects.remove(object)
                             self.player.key = False
                             self.player.lock = True
@@ -478,8 +478,8 @@ class SuperBros:
                     self.camX = 0
             elif object.texture == "gems":
                 if p_rect.colliderect(o_rect):
-                    self.sounds["pickup"].set_volume(0.25)
-                    self.sounds["pickup"].play()
+                    #self.sounds["pickup"].set_volume(0.25)
+                    #self.sounds["pickup"].play()
                     self.objects.remove(object)
                     self.player.score += 100
 
@@ -493,13 +493,13 @@ class SuperBros:
                     if self.player.y - 1 <= object.y + 16 and self.player.y - 1 >= object.y + 11:
                         if not object.collided:
                             object.collided = True
-                            self.sounds["empty-block"].set_volume(0.25)
-                            self.sounds["empty-block"].play()
+                            #self.sounds["empty-block"].set_volume(0.25)
+                            #self.sounds["empty-block"].play()
                             if not object.hit:
                                 object.hit = True
                                 if object.gem:
-                                    self.sounds["powerup-reveal"].set_volume(0.25)
-                                    self.sounds["powerup-reveal"].play()
+                                    #self.sounds["powerup-reveal"].set_volume(0.25)
+                                    #self.sounds["powerup-reveal"].play()
                                     self.objects.append(Gameobject(object.x, object.y - 16 + 2, random.randint(0, 7), "gems"))
                                 
                         return True, object.y + 16

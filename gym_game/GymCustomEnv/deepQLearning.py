@@ -16,13 +16,14 @@ class DQNAgent:
         self.action_space = action_space
 
         self.gamma = 0.6  # Discount factor
-        self.epsilon = 0.8  # Exploration factor
+        self.epsilon = 1.0  # Exploration factor
         self.epsilon_decay = 0.99  # Decay rate for exploration factor
         self.epsilon_min = 0.01  # Minimum exploration factor
         self.memory = []  # Replay memory
 
         # Build the Q-network
         self.q_network = self.build_q_network()
+        self.q_network.train()
         self.target_network = self.build_q_network()
         self.update_target_network()
 
@@ -51,6 +52,8 @@ class DQNAgent:
                 state = state.flatten()
                 state_tensor = torch.FloatTensor(state).to(self.device)
                 q_values = self.q_network(state_tensor)
+                with open('q_values.txt', 'a') as f:
+                    f.write(str(q_values.cpu().numpy()) + '\n')
                 action = torch.argmax(q_values).item()
         return action
 
