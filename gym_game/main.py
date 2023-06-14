@@ -8,6 +8,8 @@ import time
 from GymCustomEnv.deepQLearning import DQNAgent
 
 def main():
+    train = False
+
     env = CustomEnv()
     space_shape = env.observation_space.shape
 
@@ -28,14 +30,18 @@ def main():
                 break
 
             action = agent.choose_action(state)
-            with open('actions.txt', 'a') as f:
-                f.write(str(action) + '\n')
-            observation, reward, done, info = env.step(action)
-            agent.remember(state, action, reward, observation, done)
-            state = observation
 
-            if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
+            observation, reward, done, info = env.step(action)
+
+            if train:
+                with open('actions.txt', 'a') as f:
+                    f.write(str(action) + '\n')
+                agent.remember(state, action, reward, observation, done)
+
+                if len(agent.memory) > batch_size:
+                    agent.replay(batch_size)
+
+            state = observation
 
             env.render()
 
@@ -45,9 +51,10 @@ def main():
         state = env.reset()
         done = False
 
-    agent.update_target_network()
-
-    agent.save_model('model.pth')
+    if train:
+        agent.update_target_network()
+        agent.save_model('model.pth')
+        
     env.close()
 
 if __name__ == "__main__":  
