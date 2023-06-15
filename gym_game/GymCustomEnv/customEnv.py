@@ -39,6 +39,8 @@ class CustomEnv(Env):
     def reset(self):
         """reset environment"""
         # Reset the environment to its initial state
+        self.keyboard.release(Key.right)
+        self.keyboard.release(Key.left)
 
         self.game.on_init()
 
@@ -48,6 +50,7 @@ class CustomEnv(Env):
         self.temp_score = 0
         self.temp_x = 0
         self.highest_x = 0
+        self.highest_level = 0
         self.x_timer = time.time()
         self.done = False
         self.got_key = False
@@ -84,14 +87,13 @@ class CustomEnv(Env):
     def _calculate_reward(self):
         reward = 0
         if self.game.player.score > self.temp_score:
-            reward += 0.5
-        elif self.game.player.score < self.temp_score:
-            reward -= 0.5
-        if self.game.player.x > self.temp_x:
+            reward += 1
+
+        if self.game.player.x > self.temp_x and (not self.got_key and self.game.player.x < self.game.keyX) and (not self.got_lock and self.game.player.x < self.game.lockX):
             reward += 10
         elif self.game.player.x == self.temp_x:
             reward -= 3
-        elif self.game.player.x < self.temp_x:
+        elif self.game.player.x < self.temp_x or (not self.got_key and self.game.player.x > self.game.keyX) or (not self.got_lock and self.game.player.x > self.game.lockX):
             reward -= 5
         if self.game.player.key and not self.got_key:
             self.got_key = True
@@ -117,6 +119,13 @@ class CustomEnv(Env):
             self.highest_x = self.game.player.x
             self.x_timer = time.time()
 
+        if self.game.levelcount > self.highest_level:
+            self.highest_level = self.game.levelcount
+            self.highest_x = 0
+            self.x_timer = time.time()
+
+        print(reward, self.highest_x)
+
         return reward
 
     def _process_observation(self):
@@ -132,9 +141,11 @@ class CustomEnv(Env):
     def walk(self, direction):
         # walk right
         if direction == 0:
+            self.keyboard.release(Key.left)
             self.keyboard.press(Key.right)
         # walk left
         elif direction == 1:
+            self.keyboard.release(Key.right)
             self.keyboard.press(Key.left)
         # jump
         elif direction == 2:

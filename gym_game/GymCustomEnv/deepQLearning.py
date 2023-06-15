@@ -8,7 +8,7 @@ from torch import nn
 from torch.autograd import Variable
 
 class DQNAgent:
-    def __init__(self, state_shape, action_space):
+    def __init__(self, state_shape, action_space, train = True):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print(self.device)
 
@@ -16,7 +16,10 @@ class DQNAgent:
         self.action_space = action_space
 
         self.gamma = 0.6  # Discount factor
-        self.epsilon = 1.0  # Exploration factor
+        if train:
+            self.epsilon = 1.0  # Exploration factor
+        else:
+            self.epsilon = 0.01
         self.epsilon_decay = 0.99  # Decay rate for exploration factor
         self.epsilon_min = 0.01  # Minimum exploration factor
         self.memory = []  # Replay memory

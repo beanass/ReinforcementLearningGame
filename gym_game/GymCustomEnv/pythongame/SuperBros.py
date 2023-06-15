@@ -136,7 +136,7 @@ def generateLevel(width, height):
                 if random.randint(1, 20) == 1 and x > 10:
                     entities.append(Entity(x*16, (highestBlock-1)*16, None))
 
-        return tiles, objects, entities, width, height, lockColor
+        return tiles, objects, entities, width, height, lockColor, keyX*16, lockX*16
 
 class Player:
     def __init__(self, x, y):
@@ -216,7 +216,8 @@ class SuperBros:
         pygame.init()
 
         self.state = "start"
-        self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+        self.levelcount = 0
+        self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(100, 10)
         self.background = random.randint(0, 2)
         self.size = self.width, self.height = WINDOW_WIDTH, WINDOW_HEIGHT
         self.player = Player(16, 16)
@@ -287,19 +288,20 @@ class SuperBros:
                 self._running = False
             if (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER or event.key == pygame.K_DOWN) and self.state == "start":
                 self.state = "play"
-                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                self.levelcount += 1
+                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(100, 10)
                 self.spawnPlayer()
             if event.key == pygame.K_UP and self.state == "play" and self.player.state != "jumping" and self.player.state != "falling":
                 self.player.dy = PLAYER_JUMP_VELOCITY
                 self.player.state = "jumping"
                 #self.sounds["jump"].set_volume(0.25)
                 #self.sounds["jump"].play()
-            if event.key == pygame.K_RIGHT and self.state == "play":
+            '''if event.key == pygame.K_RIGHT and self.state == "play":
                 self.player.direction = "right"
                 self.player.dx = PLAYER_WALK_SPEED
             if event.key == pygame.K_LEFT and self.state == "play":
                 self.player.direction = "left"
-                self.player.dx = -PLAYER_WALK_SPEED
+                self.player.dx = -PLAYER_WALK_SPEED'''
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT and self.player.direction == "right" and self.state == "play":
                 self.player.dx = 0
@@ -309,6 +311,15 @@ class SuperBros:
     def on_loop(self):
         dt = self.clock.tick(30) / 1000
         if self.state == "play":
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_RIGHT]:
+                self.player.direction = "right"
+                self.player.dx = PLAYER_WALK_SPEED
+            if keys[pygame.K_LEFT]:
+                self.player.direction = "left"
+                self.player.dx = -PLAYER_WALK_SPEED
+
+
             self.player.update(dt)
 
             for entity in self.entities:
@@ -324,7 +335,8 @@ class SuperBros:
                 #self.sounds["death"].play()
                 self.state = "start"
                 self.background = random.randint(0, 2)
-                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                self.levelcount = 0
+                self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(100, 10)
                 self.player = Player(16, 16)
                 self.player.dead = True
                 return
@@ -345,12 +357,12 @@ class SuperBros:
                 r_collision, x = self.checkRightCollisions()
                 if r_collision:
                     self.player.dx = 0
-                    self.player.x = x
+                    self.player.x = x - 0.5
             if self.player.direction == "left":
                 l_collision, x = self.checkLeftCollisions()
                 if l_collision:
                     self.player.dx = 0
-                    self.player.x = x
+                    self.player.x = x + 0.5
             if self.player.state == "falling":
                 if b_collision:
                     for object in self.objects:
@@ -444,7 +456,8 @@ class SuperBros:
                     #self.sounds["death"].play()
                     self.state = "start"
                     self.background = random.randint(0, 2)
-                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(100, 10)
+                    self.levelcount = 0
+                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(100, 10)
                     self.spawnPlayer()
                     self.player.dead = True
                     return
@@ -471,7 +484,8 @@ class SuperBros:
             elif object.texture == "flags":
                 if p_rect.colliderect(o_rect):
                     self.background = random.randint(0, 2)
-                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor = generateLevel(floor(self.levelwidth*1.25), 10)
+                    self.levelcount += 1
+                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(floor(self.levelwidth*1.25), 10)
                     score = self.player.score
                     self.spawnPlayer()
                     self.player.score = score
@@ -507,8 +521,8 @@ class SuperBros:
         return False, None
 
     def checkBottomCollision(self):
-        tileBottomLeft = self.pointToTile(self.player.x + 1, self.player.y + self.player.height + 2)
-        tileBottomRight = self.pointToTile(self.player.x + self.player.width - 1, self.player.y + self.player.height + 2)
+        tileBottomLeft = self.pointToTile(self.player.x + 2, self.player.y + self.player.height + 2)
+        tileBottomRight = self.pointToTile(self.player.x + self.player.width - 2, self.player.y + self.player.height + 2)
 
         tiles = []
         if tileBottomLeft:
