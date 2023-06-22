@@ -51,7 +51,7 @@ plt.xscale('log')
 
 ax = plt.gca()
 ax.set_ylim([-5, 15])
-ax.set_xlim([1000, len(X1)])
+ax.set_xlim([100, len(X1)])
 
 plt.legend()
 

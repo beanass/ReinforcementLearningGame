@@ -17,8 +17,8 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 256
 VIRTUAL_HEIGHT = 144
 
-PLAYER_WALK_SPEED = 60 #100
-PLAYER_JUMP_VELOCITY = -190
+PLAYER_WALK_SPEED = 80
+PLAYER_JUMP_VELOCITY = -275
 
 SNAIL_MOVE_SPEED = 10
 
@@ -280,6 +280,43 @@ class SuperBros:
 
         self._running = True
 
+    def get_tile_observation(self):
+        tile_observation = []
+        for y in range(0, 9):
+            for x in range(int(self.player.x // 16), int(self.player.x // 16) + 16):
+                if x >= 0 and x < self.levelwidth:
+                    obs = 1 if self.level[y][x].id == TILE_ID_GROUND else 0
+                else:
+                    obs = 1
+                tile_observation.append(obs)
+
+        for object in self.objects:
+            if object.texture == "jump-blocks":
+                if object.x // 16 >= self.player.x // 16 and object.x // 16 < self.player.x // 16 + 16:
+                    #index = (object.y // 16 - 1)*16 + (object.x // 16 - 1)
+                    index = (object.y // 16)*16 + (object.x // 16 - int(self.player.x // 16))
+                    tile_observation[index] = 1
+
+        return tile_observation
+
+    def get_next_enemyX(self):
+        x = 100000
+        e_x = 0
+        for entity in self.entities:
+            if abs(entity.x - self.player.x) < x:
+                x = abs(entity.x - self.player.x)
+                e_x = entity.x - self.player.x
+        return e_x
+                
+    def get_next_enemyY(self):
+        x = 100000
+        y = 0
+        for entity in self.entities:
+            if abs(entity.x - self.player.x) < x:
+                x = abs(entity.x - self.player.x)
+                y = entity.y - self.player.y
+        return y
+
     def on_event(self, event):
         if event.type == pygame.QUIT:
             self._running = False
@@ -309,7 +346,7 @@ class SuperBros:
                 self.player.dx = 0
 
     def on_loop(self):
-        dt = self.clock.tick(30) / 1000
+        dt = self.clock.tick(60) / 1000
         if self.state == "play":
             keys = pygame.key.get_pressed()
             if keys[pygame.K_RIGHT]:
@@ -478,14 +515,14 @@ class SuperBros:
                             #self.sounds["pickup"].set_volume(0.25)
                             #self.sounds["pickup"].play()
                             self.objects.remove(object)
-                            self.player.key = False
+                            #self.player.key = False
                             self.player.lock = True
                             self.spawnFlagpole()
             elif object.texture == "flags":
                 if p_rect.colliderect(o_rect):
                     self.background = random.randint(0, 2)
                     self.levelcount += 1
-                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(floor(self.levelwidth*1.25), 10)
+                    self.level, self.objects, self.entities, self.levelwidth, self.levelheight, self.lockColor, self.keyX, self.lockX = generateLevel(100, 10)
                     score = self.player.score
                     self.spawnPlayer()
                     self.player.score = score

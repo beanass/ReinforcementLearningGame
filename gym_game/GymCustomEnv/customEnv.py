@@ -22,14 +22,27 @@ class CustomEnv(Env):
         
         self.action_space = spaces.Discrete(4)
 
-        self.observation_space = spaces.Box(low=0, high=255, shape=(144, 256, 1), dtype=np.uint8)
+        #self.observation_space = spaces.Box(low=0, high=255, shape=(144, 256, 1), dtype=np.uint8)
+        self.observation_space = spaces.Dict({
+            'tiles': spaces.MultiBinary([9, 16]),
+            'playerX': spaces.Box(low=np.array([0]), high=np.array([100*16]), shape=(1,), dtype=np.float32),
+            'playerY': spaces.Box(low=np.array([0]), high=np.array([9*16]), shape=(1,), dtype=np.float32),
+            'nextEnemyX': spaces.Box(low=np.array([-100*16]), high=np.array([100*16]), shape=(1,), dtype=np.float32),
+            'nextEnemyY': spaces.Box(low=np.array([-9*16]), high=np.array([9*16]), shape=(1,), dtype=np.float32),
+            'keyX': spaces.Box(low=np.array([-100*16]), high=np.array([100*16]), shape=(1,), dtype=np.float32),
+            'lockX': spaces.Box(low=np.array([-100*16]), high=np.array([100*16]), shape=(1,), dtype=np.float32),
+            'key': spaces.MultiBinary([1]),
+            'lock': spaces.MultiBinary([1]),
+            'dead': spaces.MultiBinary([1]),
+            'score': spaces.Box(low=np.array([0]), high=np.array([np.inf]), shape=(1,), dtype=np.float32)
+        })
 
         # Initialize variables for stdout and stderr
         self.keyboard = Controller()
 
-        self.hwnd = win32gui.FindWindow(None, r'Super 50 Bros.')
-        win32gui.SetForegroundWindow(self.hwnd)
-        self.dimensions = win32gui.GetWindowRect(self.hwnd)
+        #self.hwnd = win32gui.FindWindow(None, r'Super 50 Bros.')
+        #win32gui.SetForegroundWindow(self.hwnd)
+        #self.dimensions = win32gui.GetWindowRect(self.hwnd)
 
     def __delete__(self):
         """initialize environment"""
@@ -56,12 +69,14 @@ class CustomEnv(Env):
         self.got_key = False
         self.got_lock = False
 
-        image = ImageGrab.grab(self.dimensions)
-        im1 = image.crop((8, 39, 1288, 759))
+        #image = ImageGrab.grab(self.dimensions)
+        #im1 = image.crop((8, 39, 1288, 759))
 
-        im1 = im1.resize((256, 144))
-        im1 = im1.convert('L')
-        state = np.array(im1)
+        #im1 = im1.resize((256, 144))
+        #im1 = im1.convert('L')
+        #state = np.array(im1)
+
+        state = self._process_observation()
 
         return state
         #self._receive_data()
@@ -89,12 +104,16 @@ class CustomEnv(Env):
         if self.game.player.score > self.temp_score:
             reward += 1
 
-        if self.game.player.x > self.temp_x and (not self.got_key and self.game.player.x < self.game.keyX) and (not self.got_lock and self.game.player.x < self.game.lockX):
+        if self.game.player.x > self.temp_x and ((not self.got_key and self.game.player.x < self.game.keyX) or self.got_key) and ((not self.got_lock and self.game.player.x < self.game.lockX) or self.got_lock):
             reward += 10
         elif self.game.player.x == self.temp_x:
             reward -= 3
-        elif self.game.player.x < self.temp_x or (not self.got_key and self.game.player.x > self.game.keyX) or (not self.got_lock and self.game.player.x > self.game.lockX):
+        elif self.game.player.x < self.temp_x:
             reward -= 5
+        if not self.got_key and self.game.player.x > self.game.keyX:
+            reward -= 10
+        if not self.got_lock and self.game.player.x > self.game.lockX:
+            reward -= 10
         if self.game.player.key and not self.got_key:
             self.got_key = True
             reward += 50
@@ -124,17 +143,31 @@ class CustomEnv(Env):
             self.highest_x = 0
             self.x_timer = time.time()
 
-        print(reward, self.highest_x)
-
         return reward
 
     def _process_observation(self):
-        image = ImageGrab.grab(self.dimensions)
-        im1 = image.crop((8, 39, 1288, 759))
+        #image = ImageGrab.grab(self.dimensions)
+        #im1 = image.crop((8, 39, 1288, 759))
 
-        im1 = im1.resize((256, 144))
-        im1 = im1.convert('L')
-        observation = np.array(im1)
+        #im1 = im1.resize((256, 144))
+        #im1 = im1.convert('L')
+        #observation = np.array(im1)
+
+        observation = {
+            'tiles': self.game.get_tile_observation(),
+            'playerX': self.game.player.x,
+            'playerY': self.game.player.y,
+            'nextEnemyX': self.game.get_next_enemyX(),
+            'nextEnemyY': self.game.get_next_enemyY(),
+            'keyX': self.game.keyX - self.game.player.x,
+            'lockX': self.game.lockX - self.game.player.x,
+            'key': self.game.player.key,
+            'lock': self.game.player.lock,
+            'dead': self.game.player.dead,
+            'score': self.game.player.score
+        }
+
+        print(observation['nextEnemyX'])
 
         return observation
 
