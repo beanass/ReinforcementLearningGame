@@ -34,9 +34,9 @@ def main():
     input_shape = get_input_shape(env.observation_space)
 
     agent = DQNAgent (input_shape, env.action_space.n, train)
-    #agent.load_model('model.pth')
+    agent.load_model('model.pth')
 
-    state = env.reset()      
+    state = env.reset()
     done = False
 
     finish = False

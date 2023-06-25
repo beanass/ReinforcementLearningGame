@@ -134,4 +134,5 @@ class DQNAgent:
     def load_model(self, filepath):
         self.q_network.load_state_dict(torch.load(filepath))
         self.target_network.load_state_dict(self.q_network.state_dict())
+        self.epsilon = 0.01
 

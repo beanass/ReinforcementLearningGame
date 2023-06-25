@@ -481,7 +481,7 @@ class SuperBros:
             e_rect = pygame.Rect(entity.x, entity.y, entity.width, entity.height)
             p_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
             if p_rect.colliderect(e_rect):
-                if self.player.state == "falling":
+                if self.player.state == "falling" and self.player.y + self.player.height - 2 <= entity.y + 5:
                     #self.sounds["kill"].set_volume(0.25)
                     #self.sounds["kill"].play()
                     #self.sounds["kill2"].set_volume(0.25)
@@ -510,6 +510,7 @@ class SuperBros:
                         #self.sounds["pickup"].play()
                         self.objects.remove(object)
                         self.player.key = True
+                        self.keyX = 0
                     else:
                         if self.player.key == True:
                             #self.sounds["pickup"].set_volume(0.25)
@@ -517,6 +518,7 @@ class SuperBros:
                             self.objects.remove(object)
                             #self.player.key = False
                             self.player.lock = True
+                            self.lockX = 0
                             self.spawnFlagpole()
             elif object.texture == "flags":
                 if p_rect.colliderect(o_rect):

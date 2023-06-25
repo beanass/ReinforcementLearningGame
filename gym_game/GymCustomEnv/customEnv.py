@@ -65,6 +65,8 @@ class CustomEnv(Env):
         self.highest_x = 0
         self.highest_level = 0
         self.x_timer = time.time()
+        self.key_distance = abs(self.game.player.x - self.game.keyX)
+        self.lock_distance = abs(self.game.player.x - self.game.lockX)
         self.done = False
         self.got_key = False
         self.got_lock = False
@@ -110,15 +112,23 @@ class CustomEnv(Env):
             reward -= 3
         elif self.game.player.x < self.temp_x:
             reward -= 5
-        if not self.got_key and self.game.player.x > self.game.keyX:
+        if not self.got_key and abs(self.game.player.x - self.game.keyX) >= self.key_distance:
             reward -= 10
-        if not self.got_lock and self.game.player.x > self.game.lockX:
+        if not self.got_key and abs(self.game.player.x - self.game.keyX) < self.key_distance:
+            reward += 6
+        if self.got_key and not self.got_lock and abs(self.game.player.x - self.game.lockX) >= self.lock_distance:
             reward -= 10
+        if self.got_key and not self.got_lock and abs(self.game.player.x - self.game.lockX) < self.lock_distance:
+            reward += 6
         if self.game.player.key and not self.got_key:
             self.got_key = True
+            self.highest_x = self.game.player.x
+            self.x_timer = time.time()
             reward += 50
         if self.game.player.lock and not self.got_lock:
             self.got_lock = True
+            self.highest_x = self.game.player.x
+            self.x_timer = time.time()
             reward += 50
 
         if self.game.player.dead:
@@ -133,6 +143,8 @@ class CustomEnv(Env):
 
         self.temp_score = self.game.player.score
         self.temp_x = self.game.player.x
+        self.key_distance = 0 if self.got_key else abs(self.game.player.x - self.game.keyX)
+        self.lock_distance = 0 if self.got_lock else abs(self.game.player.x - self.game.lockX)
 
         if self.game.player.x > self.highest_x:
             self.highest_x = self.game.player.x
@@ -141,7 +153,11 @@ class CustomEnv(Env):
         if self.game.levelcount > self.highest_level:
             self.highest_level = self.game.levelcount
             self.highest_x = 0
+            self.got_key = False
+            self.got_lock = False
             self.x_timer = time.time()
+
+        print(reward)
 
         return reward
 
@@ -159,15 +175,13 @@ class CustomEnv(Env):
             'playerY': self.game.player.y,
             'nextEnemyX': self.game.get_next_enemyX(),
             'nextEnemyY': self.game.get_next_enemyY(),
-            'keyX': self.game.keyX - self.game.player.x,
-            'lockX': self.game.lockX - self.game.player.x,
+            'keyX': 0 if self.game.keyX == 0 else self.game.keyX - self.game.player.x,
+            'lockX': 0 if self.game.lockX == 0 else self.game.lockX - self.game.player.x,
             'key': self.game.player.key,
             'lock': self.game.player.lock,
             'dead': self.game.player.dead,
             'score': self.game.player.score
         }
-
-        print(observation['nextEnemyX'])
 
         return observation
 

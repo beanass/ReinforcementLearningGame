@@ -45,13 +45,34 @@ plt.plot(x2it, X2, label='left')
 plt.plot(x3it, X3, label='jump')
 
 plt.plot(x4it, X4, label='none')
+
 plt.xlabel('Iterations')
 plt.ylabel('Q-values')
 plt.xscale('log')
 
-ax = plt.gca()
-ax.set_ylim([-5, 15])
-ax.set_xlim([100, len(X1)])
+plt.legend()
+
+plt.figure()
+X1cum = np.cumsum(X1)
+X2cum = np.cumsum(X2)
+X3cum = np.cumsum(X3)
+X4cum = np.cumsum(X4)
+
+plt.plot(x1it, X1cum, label='right')
+
+plt.plot(x2it, X2cum, label='left')
+
+plt.plot(x3it, X3cum, label='jump')
+
+plt.plot(x4it, X4cum, label='none')
+
+plt.xlabel('Iterations')
+plt.ylabel('Q-values')
+plt.xscale('log')
+
+#ax = plt.gca()
+#ax.set_ylim([-5, 15])
+#ax.set_xlim([100, len(X1)])
 
 plt.legend()
 
